@@ -1,11 +1,13 @@
 # Methodology: Hybrid Data Architecture
 
-This project models Bremen's smart city profile across six components. Two
-are driven by live, free public APIs. The other four have no equivalent
-free, per-city, real-time API — so they're maintained as periodically
-updated manual data instead. This document explains that split, the
-reasoning behind it component by component, and how to keep the manual data
-current.
+This project models Bremen's smart city profile across six components.
+Sustainability is driven entirely by a live, free public API. Tourism
+blends two live APIs (traffic, flight arrivals) with one manually curated
+signal (local events) — no free API tracks "what's happening in Bremen
+today." The remaining four components have no equivalent free, per-city,
+real-time API at all — so they're maintained as periodically updated
+manual data instead. This document explains that split, the reasoning
+behind it component by component, and how to keep the manual data current.
 
 ## Why hybrid, not all-API or all-manual
 
@@ -31,21 +33,21 @@ endpoints — exactly the shape this pipeline needs — so they're queried
 fresh on every `main.py` run. No manual step is needed or possible here;
 the data is only ever as current as the last API response.
 
-**Tourism is one component with two real-time sources, not two
-components.** `traffic.py` and `flight_arrivals.py` are separate modules
-purely for code organization (different APIs, different response shapes).
-`main.py` combines their output into a single `tourism` dict
-(`{"traffic": ..., "flight_arrivals": ...}`) before passing it to
-`brand_engine.py`, which formats it as one "Tourism component" section —
-consistent with the six-component framework (sustainability, tourism,
-digital infrastructure, e-governance, smart communication, stakeholders).
+**Tourism is one component with three data sources, not three
+components.** `traffic.py`, `flight_arrivals.py`, and `local_events.py`
+are separate modules purely for code organization (different sources,
+different response shapes). `main.py` combines their output into a single
+`tourism` dict (`{"traffic": ..., "flight_arrivals": ..., "local_events":
+...}`) before passing it to `brand_engine.py`, which formats it as one
+"Tourism component" section — consistent with the six-component framework
+(sustainability, tourism, digital infrastructure, e-governance, smart
+communication, stakeholders).
 
 **Flight arrivals is optional within tourism.** `fetch_flight_arrivals()`
 never raises — if the API key is missing, the request fails, or the free
 tier's rate limit is hit, it returns `{"available": False, "error": "..."}`
-instead, and the tourism section is formatted with just the traffic
-subsection, no mention of the outage. Two free-tier constraints shape the
-implementation:
+instead, and the tourism section is formatted without that subsection, no
+mention of the outage. Two free-tier constraints shape the implementation:
 
 - AviationStack's free plan is HTTP-only (HTTPS requires a paid plan), so
   the API key travels in the query string unencrypted. That's a limitation
@@ -59,11 +61,19 @@ implementation:
   European/leisure route network) to country names, falling back to the
   airport's own name for anything not in that table.
 
-## Manually maintained components (periodic input)
+**Local events is the third tourism source, manually maintained.** See
+"Local Events" below — it lives in `manual_data.json` alongside the four
+standalone manual components, but conceptually feeds tourism rather than
+being its own top-level component.
 
-All four read from [`manual_data.json`](manual_data.json) via a shared
-loader (`config.load_manual_data`). Each was evaluated for a free real-time
-API first; none exists, for the reasons below.
+## Manually maintained data (periodic input)
+
+Five sections read from [`manual_data.json`](manual_data.json) via a
+shared loader (`config.load_manual_data`): four standalone components
+(e-governance, digital infrastructure, stakeholders, smart communication)
+plus local events, which feeds into the tourism component alongside
+traffic and flight arrivals. Each was evaluated for a free real-time API
+first; none exists, for the reasons below.
 
 ### E-Governance (`e_governance.py`)
 
@@ -132,16 +142,32 @@ API first; none exists, for the reasons below.
   - City of Bremen press/communications office reports
   - Citizen e-participation platforms, if one exists for Bremen
 
+### Local Events (`local_events.py`) — feeds tourism, not standalone
+
+- **Why manual:** No free API tracks "what festivals/events are running
+  in Bremen right now" at the granularity this needs. Event calendars
+  exist per-venue or per-organizer, not aggregated city-wide, and change
+  on a seasonal rather than real-time basis.
+- **Recommended update frequency:** Monthly, or immediately before major
+  festival season (Breminale in July, Musikfest Bremen, and the
+  mid-June-to-mid-September Open Space Domshof run) so the data reflects
+  what's actually happening rather than a stale prior season.
+- **Data sources to consult:**
+  - Official Bremen tourism event calendar (bremen.de / visit.bremen)
+  - Individual festival sites (Breminale, Musikfest Bremen, Open Space
+    Domshof)
+  - City of Bremen press/communications office event announcements
+
 ## How to update `manual_data.json`
 
 1. Open `manual_data.json` and find the relevant top-level section
-   (`e_governance`, `digital_infrastructure`, `stakeholders`, or
-   `smart_communication`).
-2. Update that section's score field. Each component uses its own field
+   (`e_governance`, `digital_infrastructure`, `stakeholders`,
+   `smart_communication`, or `local_events`).
+2. Update that section's score field. Each section uses its own field
    name (`digital_service_score`, `connectivity_score`,
-   `partnership_score`, `engagement_score`) on a **0–10 scale**. Only
-   raise a score when you have a concrete fact to back it up — don't
-   inflate scores speculatively.
+   `partnership_score`, `engagement_score`, `activity_score`) on a
+   **0–10 scale**. Only raise a score when you have a concrete fact to
+   back it up — don't inflate scores speculatively.
 3. Update `key_facts` — a short list of concrete, citable facts (not
    vague claims). These are what Claude quotes from directly in the brand
    narratives, so specificity matters more than length.

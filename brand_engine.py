@@ -1,10 +1,11 @@
 """Generates Bremen's brand narratives using the Anthropic Claude API.
 
 Takes data from all six smart city components — sustainability (air
-quality), tourism (live traffic plus real-time flight arrivals — who is
-actually visiting right now), digital infrastructure, e-governance, smart
-communication, and stakeholders — and turns it into three distinct
-branding narratives: image, positioning, and identity.
+quality), tourism (live traffic, real-time flight arrivals showing who is
+actually visiting right now, and curated local events/festivals),
+digital infrastructure, e-governance, smart communication, and
+stakeholders — and turns it into three distinct branding narratives:
+image, positioning, and identity.
 """
 
 from __future__ import annotations
@@ -20,17 +21,18 @@ from config import ANTHROPIC_API_KEY
 
 SYSTEM_PROMPT = """You are a city branding strategist for Bremen, Germany. You \
 translate real-time and curated civic data into brand storytelling across six \
-smart city components: sustainability (air quality), tourism (traffic flow \
-plus real-time flight arrival data showing who is actually visiting right \
-now), digital infrastructure, e-governance, smart communication, and the \
-local stakeholder ecosystem. You weave together whichever signals are \
-strongest — some days the story is environmental, other days it's about \
-connectivity, civic innovation, or who's landing at the airport today — to \
-explain how the city feels right now, how it compares to peer cities, and \
-what makes it distinct. You never invent facts the data doesn't support, but \
-you're skilled at reading the human story behind the numbers. When flight \
-arrival data is unavailable, simply don't reference it — never mention the \
-outage or apologize for missing data."""
+smart city components: sustainability (air quality), tourism (traffic flow, \
+real-time flight arrival data showing who is actually visiting right now, and \
+curated local events/festivals), digital infrastructure, e-governance, smart \
+communication, and the local stakeholder ecosystem. You weave together \
+whichever signals are strongest — some days the story is environmental, \
+other days it's about connectivity, civic innovation, who's landing at the \
+airport today, or what festival is filling the streets — to explain how the \
+city feels right now, how it compares to peer cities, and what makes it \
+distinct. You never invent facts the data doesn't support, but you're \
+skilled at reading the human story behind the numbers. When flight arrival \
+data is unavailable, simply don't reference it — never mention the outage \
+or apologize for missing data."""
 
 OUTPUT_SCHEMA = {
     "type": "object",
@@ -69,48 +71,57 @@ class BrandNarratives:
     identity: str
 
 
-def _format_manual_section(label: str, data: dict[str, Any]) -> str:
-    """Formats one manually maintained component as text.
+def _metric_and_facts_lines(data: dict[str, Any], indent: str = "") -> list[str]:
+    """Builds metric + key_facts (+ optional note) lines for one manual section.
 
-    Each component uses its own score field name (e.g. "connectivity_score",
-    "partnership_score") rather than a uniform "score" key, so this treats
-    every key other than key_facts/last_updated/note as a metric to display.
+    Each manually maintained section uses its own score field name (e.g.
+    "connectivity_score", "activity_score") rather than a uniform "score"
+    key, so this treats every key other than key_facts/last_updated/note as
+    a metric to display. `indent` lets this nest inside a larger section
+    (e.g. local events nested under the tourism component).
     """
     metric_keys = [key for key in data if key not in ("key_facts", "last_updated", "note")]
-    metric_lines = [
-        f"- {key.replace('_', ' ').capitalize()}: {data[key]}/10" for key in metric_keys
+    lines = [
+        f"{indent}- {key.replace('_', ' ').capitalize()}: {data[key]}/10"
+        for key in metric_keys
     ]
 
     facts = data.get("key_facts", [])
     facts_block = (
-        "\n".join(f"  - {fact}" for fact in facts)
+        "\n".join(f"{indent}  - {fact}" for fact in facts)
         if facts
-        else "  - (no key facts provided)"
+        else f"{indent}  - (no key facts provided)"
     )
+    lines += [f"{indent}- Key facts:", facts_block]
 
+    if "note" in data:
+        lines.append(f"{indent}- Note: {data['note']}")
+
+    return lines
+
+
+def _format_manual_section(label: str, data: dict[str, Any]) -> str:
+    """Formats one manually maintained top-level component as text."""
     lines = [
         f"{label} component (manual data, last updated {data.get('last_updated')}):",
-        *metric_lines,
-        "- Key facts:",
-        facts_block,
+        *_metric_and_facts_lines(data),
     ]
-    if "note" in data:
-        lines.append(f"- Note: {data['note']}")
-
     return "\n".join(lines)
 
 
 def _format_tourism_section(tourism: dict[str, Any]) -> str:
-    """Formats the tourism component: live traffic plus optional flight arrivals.
+    """Formats the tourism component: traffic, flight arrivals, local events.
 
-    Tourism has two real-time data sources feeding one component — traffic
-    flow (always present) and flight arrivals (present only when the
-    AviationStack call succeeded). When flight arrivals are unavailable,
-    that part is simply omitted rather than mentioning the outage — it has
-    nothing to do with Bremen's brand.
+    Tourism has three data sources feeding one component — traffic flow
+    (live, always present), flight arrivals (live, present only when the
+    AviationStack call succeeded), and local events (manually curated,
+    always present). When flight arrivals are unavailable, that subsection
+    is simply omitted rather than mentioning the outage — it has nothing
+    to do with Bremen's brand.
     """
     traffic = tourism.get("traffic", {})
     flight_arrivals = tourism.get("flight_arrivals", {})
+    local_events = tourism.get("local_events", {})
 
     lines = [
         "Tourism component:",
@@ -136,6 +147,12 @@ def _format_tourism_section(tourism: dict[str, Any]) -> str:
             f"  - Origin countries/cities represented: {origins}",
             "  - Notable patterns:",
             patterns_block,
+        ]
+
+    if local_events:
+        lines += [
+            f"- Local events (manual data, last updated {local_events.get('last_updated')}):",
+            *_metric_and_facts_lines(local_events, indent="  "),
         ]
 
     return "\n".join(lines)
@@ -184,7 +201,9 @@ as a confirmed fact.
 
 1. BRAND IMAGE — An emotional, sensory description of what it's like to \
 experience the city right now. Make the reader feel the air, the pace of \
-the streets, the mood of the day.
+the streets, the mood of the day. If a local event or festival is currently \
+running, it's especially useful here — a real festival happening today is \
+more vivid and concrete than a generic description of "cultural vibrancy."
 
 2. BRAND POSITIONING — A narrative on how this data suggests Bremen compares \
 to peer cities in innovation and livability. Frame it as a case for why \
@@ -210,8 +229,9 @@ def generate_brand_narratives(
 ) -> BrandNarratives:
     """Sends all six components to Claude and returns three brand narratives.
 
-    `tourism` is a dict with "traffic" and "flight_arrivals" keys — the two
-    real-time data sources that make up the tourism component.
+    `tourism` is a dict with "traffic", "flight_arrivals", and
+    "local_events" keys — the three data sources that make up the tourism
+    component.
     """
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 

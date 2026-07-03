@@ -39,5 +39,15 @@
       "Official city X/Twitter account (@bremen_de) was discontinued in favor of Instagram and TikTok, reflecting a deliberate platform-strategy shift"
     ],
     "last_updated": "2026-07-03"
+  },
+  "local_events": {
+    "activity_score": 8,
+    "key_facts": [
+      "Breminale (July) transforms the Osterdeich riverside into a major open-air festival with music stages and food vendors",
+      "Musikfest Bremen (multiple weeks) draws classical music enthusiasts to venues across the city",
+      "Open Space Domshof runs mid-June through mid-September with concerts, club nights, and live cooking events in the city center"
+    ],
+    "last_updated": "2026-07-03",
+    "note": "Manually curated from public event listings; update monthly or before major festival season"
   }
 }
