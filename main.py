@@ -1,8 +1,8 @@
 """Runs the full Bremen City Pulse pipeline.
 
 Fetches air quality (OpenWeatherMap) and traffic (TomTom) data for Bremen,
-then uses the Anthropic Claude API to turn that data into a short, warm
-daily "city pulse" summary.
+then uses the Anthropic Claude API to turn that data into three brand
+narratives: brand image, brand positioning, and brand identity.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from datetime import datetime
 import requests
 
 from air_quality import fetch_air_quality
-from city_pulse import generate_city_pulse
+from brand_engine import generate_brand_narratives
 from config import REQUIRED_ENV_VARS
 from traffic import fetch_traffic
 
@@ -39,8 +39,8 @@ def main() -> int:
         print("Fetching traffic data from TomTom...")
         traffic = fetch_traffic()
 
-        print("Generating today's City Pulse with Claude...\n")
-        summary = generate_city_pulse(air_quality, traffic)
+        print("Generating today's brand narratives with Claude...\n")
+        narratives = generate_brand_narratives(air_quality, traffic)
     except requests.RequestException as exc:
         print(f"Error fetching data: {exc}", file=sys.stderr)
         return 1
@@ -49,9 +49,17 @@ def main() -> int:
         return 1
 
     print("=" * 60)
-    print(f"BREMEN CITY PULSE — {datetime.now().strftime('%A, %d %B %Y')}")
+    print(f"BREMEN BRAND ENGINE — {datetime.now().strftime('%A, %d %B %Y')}")
     print("=" * 60)
-    print(summary)
+
+    print("\n--- BRAND IMAGE ---")
+    print(narratives.image)
+
+    print("\n--- BRAND POSITIONING ---")
+    print(narratives.positioning)
+
+    print("\n--- BRAND IDENTITY ---")
+    print(narratives.identity)
 
     return 0
 
