@@ -30,11 +30,13 @@
     "last_updated": "2026-07-03"
   },
   "smart_communication": {
-    "engagement_score": 7,
+    "engagement_score": 8,
     "key_facts": [
-      "Official tourism Instagram (@visit.bremen) has 62K followers and 1,655 posts with active branded hashtag campaigns (#visitbremen, #enjoybremen)",
-      "WFB Bremen runs a dedicated economic/tech channel spotlighting local startups and companies, separate from general city channels",
-      "Official city X/Twitter account (@bremen_de) was discontinued, redirecting followers to Instagram and TikTok — reflecting a deliberate platform-strategy shift toward visual/short-form channels"
+      "Official tourism Instagram (@visit.bremen) has 62K followers with active branded hashtag campaigns (#visitbremen, #enjoybremen)",
+      "IDA chatbot (developed by University of Bremen's TZI, commissioned by the Senator for Finance) provides 24/7 automated citizen service, answering FAQs such as ID card applications",
+      "Bremen hosts an active AI/conversational-tech industry cluster: 14+ local AI companies including botario (chatbot development), lector.ai (automated correspondence processing), and Neuraflow (public-sector AI chatbots)",
+      "BOTS BREMEN — a recurring local meetup community dedicated to chatbots, voice assistants, and conversational interfaces — reflects grassroots human-machine communication expertise",
+      "Official city X/Twitter account (@bremen_de) was discontinued in favor of Instagram and TikTok, reflecting a deliberate platform-strategy shift"
     ],
     "last_updated": "2026-07-03"
   }
