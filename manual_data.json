@@ -1,38 +1,37 @@
 {
-  "digital_infrastructure": {
-    "score": 7.2,
-    "key_facts": [
-      "Public gigabit fiber rollout covers roughly 70% of households as of mid-2026.",
-      "Free public Wi-Fi (WifiBremen) is available across the city center and main squares.",
-      "5G coverage is strong in the urban core but patchier in outer districts."
-    ],
-    "last_updated": "2026-06-01"
-  },
   "e_governance": {
-    "score": 8.0,
+    "digital_service_score": 7,
     "key_facts": [
-      "The 'Bremen Online Services' portal lets residents handle most permits and registrations digitally.",
-      "Digital ID (BundID) integration allows fully paperless applications for many municipal services.",
-      "The open data portal (daten.bremen.de) publishes city datasets for public and developer use."
+      "serviceStadt Bremen program enables online applications for building permits and residence registration",
+      "Innovationscampus für Verwaltungsdigitalisierung launched to modernize citizen-facing digital services",
+      "Active e-Government network (e-Government – Made in Bremen) coordinates public-private digital transformation"
     ],
-    "last_updated": "2026-06-01"
+    "last_updated": "2026-07-03"
   },
-  "smart_communication": {
-    "score": 6.8,
+  "digital_infrastructure": {
+    "connectivity_score": 9,
     "key_facts": [
-      "The city maintains active resident-facing channels on social media and a dedicated Bremen app.",
-      "Real-time public transport and event notifications are pushed through the BSAG transit app.",
-      "Multilingual city information is available for the growing international resident and visitor base."
+      "Bremen leads national gigabit/fiber availability ranking due to city-state status",
+      "100% area coverage with 5G mobile connectivity",
+      "Regional Broadband Center actively expanding fiber rollout ahead of federal targets"
     ],
-    "last_updated": "2026-06-01"
+    "last_updated": "2026-07-03"
   },
   "stakeholders": {
-    "score": 7.5,
+    "partnership_score": 8,
     "key_facts": [
-      "Strong public-private collaboration through the Bremen Chamber of Commerce (Handelskammer).",
-      "The University of Bremen and Jacobs University anchor a growing research and innovation ecosystem.",
-      "Active civic participation via neighborhood councils (Beiräte) shaping local development decisions."
+      "smart-digital-mobil initiative coordinated across multiple Senate departments (Economy, Finance, Environment, Science)",
+      "WFB Bremen (Wirtschaftsförderung) runs regular multi-stakeholder workshops with industry, academia, and government",
+      "Active partnerships include University of Bremen, Governikus (city-owned e-government solutions provider), and bremenports (Smart Port strategy)"
     ],
-    "last_updated": "2026-06-01"
+    "last_updated": "2026-07-03"
+  },
+  "smart_communication": {
+    "engagement_score": 5,
+    "key_facts": [
+      "Placeholder — needs real assessment of official city social media activity and citizen engagement channels"
+    ],
+    "last_updated": "2026-07-03",
+    "note": "Estimated; recommend follow-up research on official Bremen social media presence"
   }
 }

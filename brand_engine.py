@@ -66,18 +66,34 @@ class BrandNarratives:
 
 
 def _format_manual_section(label: str, data: dict[str, Any]) -> str:
-    """Formats one manually maintained component (score + key facts) as text."""
+    """Formats one manually maintained component as text.
+
+    Each component uses its own score field name (e.g. "connectivity_score",
+    "partnership_score") rather than a uniform "score" key, so this treats
+    every key other than key_facts/last_updated/note as a metric to display.
+    """
+    metric_keys = [key for key in data if key not in ("key_facts", "last_updated", "note")]
+    metric_lines = [
+        f"- {key.replace('_', ' ').capitalize()}: {data[key]}/10" for key in metric_keys
+    ]
+
     facts = data.get("key_facts", [])
     facts_block = (
         "\n".join(f"  - {fact}" for fact in facts)
         if facts
         else "  - (no key facts provided)"
     )
-    return (
-        f"{label} component (manual data, last updated {data.get('last_updated')}):\n"
-        f"- Score: {data.get('score')}/10\n"
-        f"- Key facts:\n{facts_block}"
-    )
+
+    lines = [
+        f"{label} component (manual data, last updated {data.get('last_updated')}):",
+        *metric_lines,
+        "- Key facts:",
+        facts_block,
+    ]
+    if "note" in data:
+        lines.append(f"- Note: {data['note']}")
+
+    return "\n".join(lines)
 
 
 def _build_user_prompt(
@@ -121,7 +137,10 @@ Here is today's smart city data for Bremen, across all six components:
 Using this data, write three separate brand narratives for Bremen. Draw on \
 whichever components are most relevant to each narrative — you don't need to \
 mention all six in every narrative, but each narrative should be grounded in \
-specific data points, not generic city-branding language.
+specific data points, not generic city-branding language. Where a component \
+carries a "Note" flagging it as estimated or provisional, treat it with \
+appropriately less certainty than the verified components — don't present it \
+as a confirmed fact.
 
 1. BRAND IMAGE — An emotional, sensory description of what it's like to \
 experience the city right now. Make the reader feel the air, the pace of \
