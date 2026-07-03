@@ -19,6 +19,11 @@ OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
 TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
+# Optional: powers flight_arrivals.py. Not in REQUIRED_ENV_VARS because that
+# module degrades gracefully (returns an "unavailable" summary) rather than
+# failing the whole pipeline when this key is missing or rate-limited.
+AVIATIONSTACK_API_KEY = os.environ.get("AVIATIONSTACK_API_KEY")
+
 REQUEST_TIMEOUT = 15
 
 REQUIRED_ENV_VARS = {

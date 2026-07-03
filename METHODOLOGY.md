@@ -31,6 +31,31 @@ shape this pipeline needs — so they're queried fresh on every `main.py` run.
 No manual step is needed or possible here; the data is only ever as current
 as the last API response.
 
+### Optional real-time enrichment: flight arrivals
+
+[`flight_arrivals.py`](flight_arrivals.py) fetches today's arrivals at
+Bremen Airport (BRE) from the [AviationStack Flights API](https://aviationstack.com/)
+(free tier) and summarizes total arrivals, origin countries/cities, and
+notable patterns (e.g. "5 arrivals from Turkey"). It's treated as an
+*enrichment* of the tourism component rather than a required seventh
+component: `fetch_flight_arrivals()` never raises, and if the API key is
+missing, the request fails, or the free tier's rate limit is hit, it
+returns `{"available": False, "error": "..."}` instead — `brand_engine.py`
+then simply drops the section from the prompt rather than mentioning the
+outage. Two free-tier constraints shape the implementation:
+
+- AviationStack's free plan is HTTP-only (HTTPS requires a paid plan), so
+  the API key travels in the query string unencrypted. That's a limitation
+  of AviationStack's tiering, not a choice made here.
+- The real-time flights endpoint doesn't return a country per flight, only
+  the departure airport's IATA code/name. A live per-flight country lookup
+  would require a second API call per unique departure airport against
+  AviationStack's separate Airports endpoint — impractical given the free
+  tier's small monthly request quota. Instead, `flight_arrivals.py` maps a
+  best-effort static table of common IATA codes (Bremen's typical
+  European/leisure route network) to country names, falling back to the
+  airport's own name for anything not in that table.
+
 ## Manually maintained components (periodic input)
 
 All four read from [`manual_data.json`](manual_data.json) via a shared

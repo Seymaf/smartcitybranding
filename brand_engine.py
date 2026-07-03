@@ -2,8 +2,10 @@
 
 Takes data from all six smart city components — sustainability (air
 quality), tourism (traffic), digital infrastructure, e-governance, smart
-communication, and stakeholders — and turns them into three distinct
-branding narratives: image, positioning, and identity.
+communication, and stakeholders — plus a real-time flight arrivals signal
+(who is actually visiting right now, enriching the tourism component) — and
+turns all of it into three distinct branding narratives: image,
+positioning, and identity.
 """
 
 from __future__ import annotations
@@ -19,14 +21,17 @@ from config import ANTHROPIC_API_KEY
 
 SYSTEM_PROMPT = """You are a city branding strategist for Bremen, Germany. You \
 translate real-time and curated civic data into brand storytelling across six \
-smart city components: sustainability (air quality), tourism (traffic flow), \
-digital infrastructure, e-governance, smart communication, and the local \
-stakeholder ecosystem. You weave together whichever signals are strongest — \
-some days the story is environmental, other days it's about connectivity or \
-civic innovation — to explain how the city feels right now, how it compares \
-to peer cities, and what makes it distinct. You never invent facts the data \
-doesn't support, but you're skilled at reading the human story behind the \
-numbers."""
+smart city components: sustainability (air quality), tourism (traffic flow, \
+enriched by real-time flight arrival data showing who is actually visiting \
+right now), digital infrastructure, e-governance, smart communication, and \
+the local stakeholder ecosystem. You weave together whichever signals are \
+strongest — some days the story is environmental, other days it's about \
+connectivity, civic innovation, or who's landing at the airport today — to \
+explain how the city feels right now, how it compares to peer cities, and \
+what makes it distinct. You never invent facts the data doesn't support, but \
+you're skilled at reading the human story behind the numbers. When flight \
+arrival data is unavailable, simply don't reference it — never mention the \
+outage or apologize for missing data."""
 
 OUTPUT_SCHEMA = {
     "type": "object",
@@ -96,9 +101,37 @@ def _format_manual_section(label: str, data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _format_flight_arrivals(data: dict[str, Any]) -> str | None:
+    """Formats the flight arrivals signal as text, or None if unavailable.
+
+    Returning None lets the caller drop this section entirely when the data
+    isn't available, instead of feeding Claude a paragraph about an API
+    outage that has nothing to do with Bremen's brand.
+    """
+    if not data.get("available"):
+        return None
+
+    patterns = data.get("notable_patterns") or []
+    patterns_block = (
+        "\n".join(f"  - {p}" for p in patterns)
+        if patterns
+        else "  - (no notable patterns)"
+    )
+    origins = ", ".join(data.get("origins", [])) or "none recorded"
+
+    return (
+        f"Tourism component (continued) — Flight Arrivals at Bremen Airport "
+        f"(AviationStack, real-time, as of {data.get('fetched_at')}):\n"
+        f"- Total arrivals today: {data.get('total_arrivals')}\n"
+        f"- Origin countries/cities represented: {origins}\n"
+        f"- Notable patterns:\n{patterns_block}"
+    )
+
+
 def _build_user_prompt(
     air_quality: dict[str, Any],
     traffic: dict[str, Any],
+    flight_arrivals: dict[str, Any],
     digital_infrastructure: dict[str, Any],
     e_governance: dict[str, Any],
     smart_communication: dict[str, Any],
@@ -121,12 +154,13 @@ def _build_user_prompt(
 - Congestion ratio: {traffic.get('congestion_ratio')}
 - Road closure reported: {traffic.get('road_closure')}
 - Confidence score: {traffic.get('confidence')}""",
+        _format_flight_arrivals(flight_arrivals),
         _format_manual_section("Digital Infrastructure", digital_infrastructure),
         _format_manual_section("E-Governance", e_governance),
         _format_manual_section("Smart Communication", smart_communication),
         _format_manual_section("Stakeholders", stakeholders),
     ]
-    data_block = "\n\n".join(sections)
+    data_block = "\n\n".join(section for section in sections if section is not None)
 
     return f"""Today is {today}.
 
@@ -148,7 +182,10 @@ the streets, the mood of the day.
 
 2. BRAND POSITIONING — A narrative on how this data suggests Bremen compares \
 to peer cities in innovation and livability. Frame it as a case for why \
-Bremen stands out, not a dry statistical comparison.
+Bremen stands out, not a dry statistical comparison. If flight arrival data \
+is present, it's especially useful here — who is actually flying in today is \
+concrete evidence of Bremen's international pull, stronger than an abstract \
+claim about tourism appeal.
 
 3. BRAND IDENTITY — A short statement (2-3 sentences) capturing Bremen's \
 distinct character today, grounded in this data.
@@ -160,17 +197,19 @@ just one of the three and get a complete, satisfying piece of writing."""
 def generate_brand_narratives(
     air_quality: dict[str, Any],
     traffic: dict[str, Any],
+    flight_arrivals: dict[str, Any],
     digital_infrastructure: dict[str, Any],
     e_governance: dict[str, Any],
     smart_communication: dict[str, Any],
     stakeholders: dict[str, Any],
 ) -> BrandNarratives:
-    """Sends all six smart city components to Claude and returns three brand narratives."""
+    """Sends all seven inputs to Claude and returns three brand narratives."""
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
     user_prompt = _build_user_prompt(
         air_quality=air_quality,
         traffic=traffic,
+        flight_arrivals=flight_arrivals,
         digital_infrastructure=digital_infrastructure,
         e_governance=e_governance,
         smart_communication=smart_communication,
