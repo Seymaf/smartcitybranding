@@ -53,18 +53,45 @@ subsection, and a local events subsection — not three independent inputs.
    `tourism` dict), and four reads from `manual_data.json`
    (`fetch_digital_infrastructure`, `fetch_e_governance`,
    `fetch_smart_communication`, `fetch_stakeholders`).
-2. **Generate** — [`brand_engine.py`](brand_engine.py) sends all six
-   components to Claude (`claude-opus-4-8`) in one structured-output call,
-   which returns three grounded narratives:
+2. **Generate** — [`brand_engine.py`](brand_engine.py) makes two Claude
+   (`claude-opus-4-8`) calls:
    - **Brand image** — an emotional, sensory description of experiencing
      the city right now (a currently running festival is especially
-     useful evidence here)
-   - **Brand positioning** — how the data suggests Bremen compares to peer
-     cities in innovation and livability (flight arrival origins, when
-     available, are especially useful evidence here)
-   - **Brand identity** — a short statement of the city's distinct
-     character today
-3. **Print** — `main.py` prints all three narratives under clear labels.
+     useful evidence here). Generated on **every run** — it's grounded in
+     live data that changes constantly, so caching it wouldn't reflect
+     today's reality.
+   - **Brand positioning** (how the data suggests Bremen compares to peer
+     cities in innovation and livability — flight arrival origins, when
+     available, are especially useful evidence here) and **brand
+     identity** (a short statement of the city's distinct character) are
+     generated together and **cached** — see below.
+3. **Print** — `main.py` prints all three narratives under clear labels,
+   marking each as `(generated today)` or `(cached)`.
+
+## Caching brand positioning and identity
+
+`brand_positioning` and `brand_identity` lean mostly on the slower-moving
+manual components (digital infrastructure, e-governance, smart
+communication, stakeholders, local events), so there's no reason to pay
+for a fresh Claude call for them on every run. [`narrative_cache.py`](narrative_cache.py)
+writes them to `cached_narratives.json` (git-ignored — it's a local
+runtime cache, not something to commit) alongside a fingerprint of every
+`manual_data.json` section's `last_updated` value.
+
+On each run:
+
+- If `cached_narratives.json` exists and every section's `last_updated`
+  still matches the fingerprint, the cached positioning/identity are
+  reused — no Claude call.
+- If any `last_updated` value has changed (or there's no cache yet), both
+  are regenerated and the cache is rewritten with the new fingerprint.
+- Passing `--refresh` forces regeneration regardless of the fingerprint:
+
+  ```bash
+  python main.py --refresh
+  ```
+
+`brand_image` is unaffected by any of this — it always calls Claude fresh.
 
 `city_pulse.py` is an earlier, simpler two-component (air quality + traffic)
 summary generator. It's kept in the repo for reference but is no longer
@@ -107,11 +134,16 @@ None of these keys are checked into the repo — `.env` is git-ignored, and
 
 ```bash
 python main.py
+
+# Force brand_positioning and brand_identity to regenerate even if
+# manual_data.json hasn't changed since the last cache:
+python main.py --refresh
 ```
 
 This prints progress as it fetches each component's data (tourism logs as
 one step covering traffic, flight arrivals, and local events), then prints
-the three generated brand narratives for Bremen.
+the three generated brand narratives for Bremen, each labeled
+`(generated today)` or `(cached)`.
 
 ## Updating manual data
 
@@ -161,7 +193,9 @@ e_governance.py              # reads manual_data.json
 smart_communication.py       # reads manual_data.json
 stakeholders.py               # reads manual_data.json
 manual_data.json             # manually maintained data for the five sections above
-brand_engine.py              # builds the prompt and calls Claude for the 3 brand narratives
+brand_engine.py              # builds prompts and calls Claude for the 3 brand narratives
+narrative_cache.py            # caches brand_positioning/brand_identity in cached_narratives.json
+cached_narratives.json         # runtime cache (git-ignored, created on first run)
 city_pulse.py                 # earlier 2-component summary generator (kept, unused by main.py)
 main.py                       # orchestrates the full pipeline end-to-end
 ```

@@ -6,6 +6,15 @@ actually visiting right now, and curated local events/festivals),
 digital infrastructure, e-governance, smart communication, and
 stakeholders — and turns it into three distinct branding narratives:
 image, positioning, and identity.
+
+Split into two independent calls so main.py can cache brand_positioning
+and brand_identity separately from brand_image (see narrative_cache.py):
+
+- generate_brand_image(...) -> str — meant to run every day, grounded in
+  the live sustainability and tourism signals that change constantly.
+- generate_brand_positioning_and_identity(...) -> PositioningAndIdentity —
+  grounded mostly in the slower-moving manual components; main.py only
+  calls this when manual_data.json has changed or a refresh is forced.
 """
 
 from __future__ import annotations
@@ -34,7 +43,7 @@ skilled at reading the human story behind the numbers. When flight arrival \
 data is unavailable, simply don't reference it — never mention the outage \
 or apologize for missing data."""
 
-OUTPUT_SCHEMA = {
+IMAGE_OUTPUT_SCHEMA = {
     "type": "object",
     "properties": {
         "brand_image": {
@@ -44,6 +53,14 @@ OUTPUT_SCHEMA = {
                 "experience Bremen right now, grounded in today's data."
             ),
         },
+    },
+    "required": ["brand_image"],
+    "additionalProperties": False,
+}
+
+POSITIONING_IDENTITY_OUTPUT_SCHEMA = {
+    "type": "object",
+    "properties": {
         "brand_positioning": {
             "type": "string",
             "description": (
@@ -59,14 +76,13 @@ OUTPUT_SCHEMA = {
             ),
         },
     },
-    "required": ["brand_image", "brand_positioning", "brand_identity"],
+    "required": ["brand_positioning", "brand_identity"],
     "additionalProperties": False,
 }
 
 
 @dataclass
-class BrandNarratives:
-    image: str
+class PositioningAndIdentity:
     positioning: str
     identity: str
 
@@ -158,7 +174,7 @@ def _format_tourism_section(tourism: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _build_user_prompt(
+def _build_data_block(
     air_quality: dict[str, Any],
     tourism: dict[str, Any],
     digital_infrastructure: dict[str, Any],
@@ -166,6 +182,7 @@ def _build_user_prompt(
     smart_communication: dict[str, Any],
     stakeholders: dict[str, Any],
 ) -> str:
+    """Formats all six components' data — shared by both prompt builders below."""
     today = datetime.now().strftime("%A, %d %B %Y")
 
     sections = [
@@ -189,53 +206,138 @@ def _build_user_prompt(
 
 Here is today's smart city data for Bremen, across all six components:
 
-{data_block}
-
-Using this data, write three separate brand narratives for Bremen. Draw on \
-whichever components are most relevant to each narrative — you don't need to \
-mention all six in every narrative, but each narrative should be grounded in \
-specific data points, not generic city-branding language. Where a component \
-carries a "Note" flagging it as estimated or provisional, treat it with \
-appropriately less certainty than the verified components — don't present it \
-as a confirmed fact.
-
-1. BRAND IMAGE — An emotional, sensory description of what it's like to \
-experience the city right now. Make the reader feel the air, the pace of \
-the streets, the mood of the day. If a local event or festival is currently \
-running, it's especially useful here — a real festival happening today is \
-more vivid and concrete than a generic description of "cultural vibrancy."
-
-2. BRAND POSITIONING — A narrative on how this data suggests Bremen compares \
-to peer cities in innovation and livability. Frame it as a case for why \
-Bremen stands out, not a dry statistical comparison. If flight arrival data \
-is present, it's especially useful here — who is actually flying in today is \
-concrete evidence of Bremen's international pull, stronger than an abstract \
-claim about tourism appeal.
-
-3. BRAND IDENTITY — A short statement (2-3 sentences) capturing Bremen's \
-distinct character today, grounded in this data.
-
-Each narrative should be self-contained — a reader should be able to read \
-just one of the three and get a complete, satisfying piece of writing."""
+{data_block}"""
 
 
-def generate_brand_narratives(
+def _build_image_prompt(
     air_quality: dict[str, Any],
     tourism: dict[str, Any],
     digital_infrastructure: dict[str, Any],
     e_governance: dict[str, Any],
     smart_communication: dict[str, Any],
     stakeholders: dict[str, Any],
-) -> BrandNarratives:
-    """Sends all six components to Claude and returns three brand narratives.
+) -> str:
+    data_block = _build_data_block(
+        air_quality=air_quality,
+        tourism=tourism,
+        digital_infrastructure=digital_infrastructure,
+        e_governance=e_governance,
+        smart_communication=smart_communication,
+        stakeholders=stakeholders,
+    )
 
-    `tourism` is a dict with "traffic", "flight_arrivals", and
-    "local_events" keys — the three data sources that make up the tourism
-    component.
+    return f"""{data_block}
+
+Write the BRAND IMAGE narrative for Bremen: an emotional, sensory \
+description of what it's like to experience the city right now. Make the \
+reader feel the air, the pace of the streets, the mood of the day. If a \
+local event or festival is currently running, it's especially useful here \
+— a real festival happening today is more vivid and concrete than a \
+generic description of "cultural vibrancy." Ground it in specific data \
+points, not generic city-branding language. Where a component carries a \
+"Note" flagging it as estimated or provisional, treat it with \
+appropriately less certainty than the verified components. This should be \
+self-contained — a reader should get a complete, satisfying piece of \
+writing from this alone."""
+
+
+def _build_positioning_identity_prompt(
+    air_quality: dict[str, Any],
+    tourism: dict[str, Any],
+    digital_infrastructure: dict[str, Any],
+    e_governance: dict[str, Any],
+    smart_communication: dict[str, Any],
+    stakeholders: dict[str, Any],
+) -> str:
+    data_block = _build_data_block(
+        air_quality=air_quality,
+        tourism=tourism,
+        digital_infrastructure=digital_infrastructure,
+        e_governance=e_governance,
+        smart_communication=smart_communication,
+        stakeholders=stakeholders,
+    )
+
+    return f"""{data_block}
+
+Using this data, write two separate brand narratives for Bremen. Draw on \
+whichever components are most relevant to each — you don't need to mention \
+all six in both, but each should be grounded in specific data points, not \
+generic city-branding language. Where a component carries a "Note" \
+flagging it as estimated or provisional, treat it with appropriately less \
+certainty than the verified components — don't present it as a confirmed \
+fact.
+
+1. BRAND POSITIONING — A narrative on how this data suggests Bremen compares \
+to peer cities in innovation and livability. Frame it as a case for why \
+Bremen stands out, not a dry statistical comparison. If flight arrival data \
+is present, it's especially useful here — who is actually flying in today is \
+concrete evidence of Bremen's international pull, stronger than an abstract \
+claim about tourism appeal.
+
+2. BRAND IDENTITY — A short statement (2-3 sentences) capturing Bremen's \
+distinct character today, grounded in this data.
+
+Each narrative should be self-contained — a reader should be able to read \
+just one and get a complete, satisfying piece of writing."""
+
+
+def generate_brand_image(
+    air_quality: dict[str, Any],
+    tourism: dict[str, Any],
+    digital_infrastructure: dict[str, Any],
+    e_governance: dict[str, Any],
+    smart_communication: dict[str, Any],
+    stakeholders: dict[str, Any],
+) -> str:
+    """Sends all six components to Claude and returns the brand image narrative.
+
+    Meant to be called on every run — grounded in the live sustainability
+    and tourism signals that change constantly, so caching it wouldn't
+    reflect today's reality. `tourism` is a dict with "traffic",
+    "flight_arrivals", and "local_events" keys.
     """
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-    user_prompt = _build_user_prompt(
+    user_prompt = _build_image_prompt(
+        air_quality=air_quality,
+        tourism=tourism,
+        digital_infrastructure=digital_infrastructure,
+        e_governance=e_governance,
+        smart_communication=smart_communication,
+        stakeholders=stakeholders,
+    )
+
+    message = client.messages.create(
+        model="claude-opus-4-8",
+        max_tokens=1024,
+        system=SYSTEM_PROMPT,
+        output_config={"format": {"type": "json_schema", "schema": IMAGE_OUTPUT_SCHEMA}},
+        messages=[{"role": "user", "content": user_prompt}],
+    )
+
+    text = next(block.text for block in message.content if block.type == "text")
+    return json.loads(text)["brand_image"]
+
+
+def generate_brand_positioning_and_identity(
+    air_quality: dict[str, Any],
+    tourism: dict[str, Any],
+    digital_infrastructure: dict[str, Any],
+    e_governance: dict[str, Any],
+    smart_communication: dict[str, Any],
+    stakeholders: dict[str, Any],
+) -> PositioningAndIdentity:
+    """Sends all six components to Claude and returns positioning + identity.
+
+    Meant to be called only when manual_data.json has changed since the
+    last cached result, or a refresh is forced — see narrative_cache.py.
+    `tourism` is a dict with "traffic", "flight_arrivals", and
+    "local_events" keys.
+    """
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+    user_prompt = _build_positioning_identity_prompt(
         air_quality=air_quality,
         tourism=tourism,
         digital_infrastructure=digital_infrastructure,
@@ -248,15 +350,16 @@ def generate_brand_narratives(
         model="claude-opus-4-8",
         max_tokens=2048,
         system=SYSTEM_PROMPT,
-        output_config={"format": {"type": "json_schema", "schema": OUTPUT_SCHEMA}},
+        output_config={
+            "format": {"type": "json_schema", "schema": POSITIONING_IDENTITY_OUTPUT_SCHEMA}
+        },
         messages=[{"role": "user", "content": user_prompt}],
     )
 
     text = next(block.text for block in message.content if block.type == "text")
     data = json.loads(text)
 
-    return BrandNarratives(
-        image=data["brand_image"],
+    return PositioningAndIdentity(
         positioning=data["brand_positioning"],
         identity=data["brand_identity"],
     )
