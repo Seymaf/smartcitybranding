@@ -3,12 +3,18 @@
 Represents a real-time "who is actually arriving right now" signal for the
 tourism component, alongside (not replacing) traffic.py's road-flow data.
 
-Two free-tier constraints shape this module:
+Three free-tier constraints shape this module:
 
 - AviationStack's free plan is HTTP-only (HTTPS requires a paid plan), so
   the API key travels in the query string over plain HTTP. That's a
   limitation of AviationStack's own product tiering, not a choice made
   here — upgrade to a paid plan if that matters for your threat model.
+- The `flight_date` query parameter is a paid-plan-only feature — the free
+  plan returns `403 Forbidden` if it's included. This module doesn't send
+  it at all; it relies on the endpoint's default behavior (a real-time
+  snapshot of flights, which for arr_iata=BRE is effectively "today") and
+  narrows to today client-side using each flight's own `flight_date` field
+  in the response, which the free plan does return per record.
 - The real-time /flights endpoint doesn't return a country field per
   flight, only the departure airport's name/IATA/ICAO/timezone. Resolving
   precise countries would mean a second lookup per unique departure
@@ -150,15 +156,14 @@ def fetch_flight_arrivals() -> dict[str, Any]:
     if not AVIATIONSTACK_API_KEY:
         return _empty_summary("AVIATIONSTACK_API_KEY is not set")
 
-    today = date.today().isoformat()
-
     try:
         response = requests.get(
             FLIGHTS_URL,
             params={
+                # No flight_date here — it's a paid-plan-only parameter and
+                # the free plan returns 403 Forbidden if it's included.
                 "access_key": AVIATIONSTACK_API_KEY,
                 "arr_iata": BREMEN_AIRPORT_IATA,
-                "flight_date": today,
                 "limit": 100,
             },
             timeout=REQUEST_TIMEOUT,
@@ -177,8 +182,15 @@ def fetch_flight_arrivals() -> dict[str, Any]:
         )
         return _empty_summary(str(message))
 
-    flights = payload.get("data") or []
+    all_flights = payload.get("data") or []
     fetched_at = datetime.now(timezone.utc).isoformat()
+
+    # The free plan can't filter by date server-side, so narrow to today
+    # using each flight's own flight_date field instead. Keep flights that
+    # omit the field rather than drop them — the real-time endpoint only
+    # returns a small, current window anyway.
+    today = date.today().isoformat()
+    flights = [f for f in all_flights if f.get("flight_date", today) == today]
 
     if not flights:
         return {
