@@ -27,11 +27,12 @@
     "last_updated": "2026-07-03"
   },
   "smart_communication": {
-    "engagement_score": 5,
+    "engagement_score": 7,
     "key_facts": [
-      "Placeholder — needs real assessment of official city social media activity and citizen engagement channels"
+      "Official tourism Instagram (@visit.bremen) has 62K followers and 1,655 posts with active branded hashtag campaigns (#visitbremen, #enjoybremen)",
+      "WFB Bremen runs a dedicated economic/tech channel spotlighting local startups and companies, separate from general city channels",
+      "Official city X/Twitter account (@bremen_de) was discontinued, redirecting followers to Instagram and TikTok — reflecting a deliberate platform-strategy shift toward visual/short-form channels"
     ],
-    "last_updated": "2026-07-03",
-    "note": "Estimated; recommend follow-up research on official Bremen social media presence"
+    "last_updated": "2026-07-03"
   }
 }

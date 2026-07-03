@@ -90,12 +90,13 @@ API first; none exists, for the reasons below.
 - **Why manual:** No API aggregates "citizen engagement quality" across a
   city's official communication channels. Assessing it requires an actual
   audit of social media activity, response rates, and app usage.
-- **Current status:** ⚠️ **Placeholder.** The current `engagement_score`
-  and `key_facts` in `manual_data.json` are provisional estimates, marked
-  explicitly via the `note` field. This is the highest-priority component
-  to replace with real research.
-- **Recommended update frequency:** Monthly until a verified baseline
-  replaces the placeholder, then quarterly thereafter.
+- **Current status:** ✅ **Verified.** `manual_data.json` now reflects a
+  real audit of Bremen's official channels (tourism Instagram following and
+  post cadence, WFB Bremen's dedicated tech channel, the discontinued city
+  X/Twitter account) rather than the earlier placeholder estimate.
+- **Recommended update frequency:** Quarterly — social platform strategy
+  and follower/engagement figures shift slowly enough that a monthly check
+  isn't necessary once a verified baseline is in place.
 - **Data sources to consult:**
   - Official Bremen city social media accounts — posting frequency,
     engagement rates
