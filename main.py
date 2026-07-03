@@ -1,11 +1,10 @@
 """Runs the full Bremen City Pulse pipeline.
 
 Fetches data for Bremen's six smart city components — sustainability (air
-quality), tourism (traffic), digital infrastructure, e-governance, smart
-communication, and stakeholders — plus a real-time flight arrivals signal
-enriching the tourism component, then uses the Anthropic Claude API to turn
-all of it into three brand narratives: brand image, brand positioning, and
-brand identity.
+quality), tourism (live traffic plus real-time flight arrivals), digital
+infrastructure, e-governance, smart communication, and stakeholders — then
+uses the Anthropic Claude API to turn all of it into three brand
+narratives: brand image, brand positioning, and brand identity.
 """
 
 from __future__ import annotations
@@ -44,13 +43,12 @@ def main() -> int:
         print("Fetching air quality data from OpenWeatherMap (sustainability)...")
         air_quality = fetch_air_quality()
 
-        print("Fetching traffic data from TomTom (tourism)...")
+        print("Fetching tourism data (TomTom traffic + AviationStack arrivals)...")
         traffic = fetch_traffic()
-
-        print("Fetching flight arrivals from AviationStack (tourism)...")
         flight_arrivals = fetch_flight_arrivals()
         if not flight_arrivals.get("available"):
-            print(f"  (unavailable: {flight_arrivals.get('error')})")
+            print(f"  (flight arrivals unavailable: {flight_arrivals.get('error')})")
+        tourism = {"traffic": traffic, "flight_arrivals": flight_arrivals}
 
         print("Reading digital infrastructure data...")
         digital_infrastructure = fetch_digital_infrastructure()
@@ -67,8 +65,7 @@ def main() -> int:
         print("Generating today's brand narratives with Claude...\n")
         narratives = generate_brand_narratives(
             air_quality=air_quality,
-            traffic=traffic,
-            flight_arrivals=flight_arrivals,
+            tourism=tourism,
             digital_infrastructure=digital_infrastructure,
             e_governance=e_governance,
             smart_communication=smart_communication,

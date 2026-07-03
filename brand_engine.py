@@ -1,11 +1,10 @@
 """Generates Bremen's brand narratives using the Anthropic Claude API.
 
 Takes data from all six smart city components — sustainability (air
-quality), tourism (traffic), digital infrastructure, e-governance, smart
-communication, and stakeholders — plus a real-time flight arrivals signal
-(who is actually visiting right now, enriching the tourism component) — and
-turns all of it into three distinct branding narratives: image,
-positioning, and identity.
+quality), tourism (live traffic plus real-time flight arrivals — who is
+actually visiting right now), digital infrastructure, e-governance, smart
+communication, and stakeholders — and turns it into three distinct
+branding narratives: image, positioning, and identity.
 """
 
 from __future__ import annotations
@@ -21,10 +20,10 @@ from config import ANTHROPIC_API_KEY
 
 SYSTEM_PROMPT = """You are a city branding strategist for Bremen, Germany. You \
 translate real-time and curated civic data into brand storytelling across six \
-smart city components: sustainability (air quality), tourism (traffic flow, \
-enriched by real-time flight arrival data showing who is actually visiting \
-right now), digital infrastructure, e-governance, smart communication, and \
-the local stakeholder ecosystem. You weave together whichever signals are \
+smart city components: sustainability (air quality), tourism (traffic flow \
+plus real-time flight arrival data showing who is actually visiting right \
+now), digital infrastructure, e-governance, smart communication, and the \
+local stakeholder ecosystem. You weave together whichever signals are \
 strongest — some days the story is environmental, other days it's about \
 connectivity, civic innovation, or who's landing at the airport today — to \
 explain how the city feels right now, how it compares to peer cities, and \
@@ -101,37 +100,50 @@ def _format_manual_section(label: str, data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _format_flight_arrivals(data: dict[str, Any]) -> str | None:
-    """Formats the flight arrivals signal as text, or None if unavailable.
+def _format_tourism_section(tourism: dict[str, Any]) -> str:
+    """Formats the tourism component: live traffic plus optional flight arrivals.
 
-    Returning None lets the caller drop this section entirely when the data
-    isn't available, instead of feeding Claude a paragraph about an API
-    outage that has nothing to do with Bremen's brand.
+    Tourism has two real-time data sources feeding one component — traffic
+    flow (always present) and flight arrivals (present only when the
+    AviationStack call succeeded). When flight arrivals are unavailable,
+    that part is simply omitted rather than mentioning the outage — it has
+    nothing to do with Bremen's brand.
     """
-    if not data.get("available"):
-        return None
+    traffic = tourism.get("traffic", {})
+    flight_arrivals = tourism.get("flight_arrivals", {})
 
-    patterns = data.get("notable_patterns") or []
-    patterns_block = (
-        "\n".join(f"  - {p}" for p in patterns)
-        if patterns
-        else "  - (no notable patterns)"
-    )
-    origins = ", ".join(data.get("origins", [])) or "none recorded"
+    lines = [
+        "Tourism component:",
+        "- Traffic (TomTom, city center):",
+        f"  - Current average speed: {traffic.get('current_speed_kmh')} km/h",
+        f"  - Free-flow speed: {traffic.get('free_flow_speed_kmh')} km/h",
+        f"  - Congestion ratio: {traffic.get('congestion_ratio')}",
+        f"  - Road closure reported: {traffic.get('road_closure')}",
+        f"  - Confidence score: {traffic.get('confidence')}",
+    ]
 
-    return (
-        f"Tourism component (continued) — Flight Arrivals at Bremen Airport "
-        f"(AviationStack, real-time, as of {data.get('fetched_at')}):\n"
-        f"- Total arrivals today: {data.get('total_arrivals')}\n"
-        f"- Origin countries/cities represented: {origins}\n"
-        f"- Notable patterns:\n{patterns_block}"
-    )
+    if flight_arrivals.get("available"):
+        patterns = flight_arrivals.get("notable_patterns") or []
+        patterns_block = (
+            "\n".join(f"    - {p}" for p in patterns)
+            if patterns
+            else "    - (no notable patterns)"
+        )
+        origins = ", ".join(flight_arrivals.get("origins", [])) or "none recorded"
+        lines += [
+            f"- Flight arrivals (AviationStack, real-time, as of {flight_arrivals.get('fetched_at')}):",
+            f"  - Total arrivals today at Bremen Airport (BRE): {flight_arrivals.get('total_arrivals')}",
+            f"  - Origin countries/cities represented: {origins}",
+            "  - Notable patterns:",
+            patterns_block,
+        ]
+
+    return "\n".join(lines)
 
 
 def _build_user_prompt(
     air_quality: dict[str, Any],
-    traffic: dict[str, Any],
-    flight_arrivals: dict[str, Any],
+    tourism: dict[str, Any],
     digital_infrastructure: dict[str, Any],
     e_governance: dict[str, Any],
     smart_communication: dict[str, Any],
@@ -148,19 +160,13 @@ def _build_user_prompt(
 - O3: {air_quality.get('o3')} µg/m³
 - SO2: {air_quality.get('so2')} µg/m³
 - CO: {air_quality.get('co')} µg/m³""",
-        f"""Tourism component — Traffic (TomTom, city center):
-- Current average speed: {traffic.get('current_speed_kmh')} km/h
-- Free-flow speed: {traffic.get('free_flow_speed_kmh')} km/h
-- Congestion ratio: {traffic.get('congestion_ratio')}
-- Road closure reported: {traffic.get('road_closure')}
-- Confidence score: {traffic.get('confidence')}""",
-        _format_flight_arrivals(flight_arrivals),
+        _format_tourism_section(tourism),
         _format_manual_section("Digital Infrastructure", digital_infrastructure),
         _format_manual_section("E-Governance", e_governance),
         _format_manual_section("Smart Communication", smart_communication),
         _format_manual_section("Stakeholders", stakeholders),
     ]
-    data_block = "\n\n".join(section for section in sections if section is not None)
+    data_block = "\n\n".join(sections)
 
     return f"""Today is {today}.
 
@@ -196,20 +202,22 @@ just one of the three and get a complete, satisfying piece of writing."""
 
 def generate_brand_narratives(
     air_quality: dict[str, Any],
-    traffic: dict[str, Any],
-    flight_arrivals: dict[str, Any],
+    tourism: dict[str, Any],
     digital_infrastructure: dict[str, Any],
     e_governance: dict[str, Any],
     smart_communication: dict[str, Any],
     stakeholders: dict[str, Any],
 ) -> BrandNarratives:
-    """Sends all seven inputs to Claude and returns three brand narratives."""
+    """Sends all six components to Claude and returns three brand narratives.
+
+    `tourism` is a dict with "traffic" and "flight_arrivals" keys — the two
+    real-time data sources that make up the tourism component.
+    """
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
     user_prompt = _build_user_prompt(
         air_quality=air_quality,
-        traffic=traffic,
-        flight_arrivals=flight_arrivals,
+        tourism=tourism,
         digital_infrastructure=digital_infrastructure,
         e_governance=e_governance,
         smart_communication=smart_communication,

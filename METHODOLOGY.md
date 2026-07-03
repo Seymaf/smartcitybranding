@@ -21,28 +21,31 @@ never presented as more current or more certain than they actually are.
 
 ## Real-time, API-driven components
 
-| Component | Module | API | What it fetches |
+| Component | Module(s) | API | What it fetches |
 | --- | --- | --- | --- |
 | Sustainability | [`air_quality.py`](air_quality.py) | [OpenWeatherMap Air Pollution API](https://openweathermap.org/api/air-pollution) (free tier) | AQI index + PM2.5, PM10, NO2, O3, SO2, CO concentrations |
-| Tourism | [`traffic.py`](traffic.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier) | Current vs. free-flow speed, congestion ratio, road closures |
+| Tourism | [`traffic.py`](traffic.py) + [`flight_arrivals.py`](flight_arrivals.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier) + [AviationStack Flights API](https://aviationstack.com/) (free tier) | Current vs. free-flow speed, congestion ratio, road closures; plus today's arrival count, origin countries/cities, and notable patterns (e.g. "5 arrivals from Turkey") |
 
-Both are simple, free, city-coordinate-keyed REST endpoints — exactly the
-shape this pipeline needs — so they're queried fresh on every `main.py` run.
-No manual step is needed or possible here; the data is only ever as current
-as the last API response.
+Both underlying APIs are simple, free, city-coordinate-keyed REST
+endpoints — exactly the shape this pipeline needs — so they're queried
+fresh on every `main.py` run. No manual step is needed or possible here;
+the data is only ever as current as the last API response.
 
-### Optional real-time enrichment: flight arrivals
+**Tourism is one component with two real-time sources, not two
+components.** `traffic.py` and `flight_arrivals.py` are separate modules
+purely for code organization (different APIs, different response shapes).
+`main.py` combines their output into a single `tourism` dict
+(`{"traffic": ..., "flight_arrivals": ...}`) before passing it to
+`brand_engine.py`, which formats it as one "Tourism component" section —
+consistent with the six-component framework (sustainability, tourism,
+digital infrastructure, e-governance, smart communication, stakeholders).
 
-[`flight_arrivals.py`](flight_arrivals.py) fetches today's arrivals at
-Bremen Airport (BRE) from the [AviationStack Flights API](https://aviationstack.com/)
-(free tier) and summarizes total arrivals, origin countries/cities, and
-notable patterns (e.g. "5 arrivals from Turkey"). It's treated as an
-*enrichment* of the tourism component rather than a required seventh
-component: `fetch_flight_arrivals()` never raises, and if the API key is
-missing, the request fails, or the free tier's rate limit is hit, it
-returns `{"available": False, "error": "..."}` instead — `brand_engine.py`
-then simply drops the section from the prompt rather than mentioning the
-outage. Two free-tier constraints shape the implementation:
+**Flight arrivals is optional within tourism.** `fetch_flight_arrivals()`
+never raises — if the API key is missing, the request fails, or the free
+tier's rate limit is hit, it returns `{"available": False, "error": "..."}`
+instead, and the tourism section is formatted with just the traffic
+subsection, no mention of the outage. Two free-tier constraints shape the
+implementation:
 
 - AviationStack's free plan is HTTP-only (HTTPS requires a paid plan), so
   the API key travels in the query string unencrypted. That's a limitation
