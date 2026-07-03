@@ -1,0 +1,38 @@
+{
+  "digital_infrastructure": {
+    "score": 7.2,
+    "key_facts": [
+      "Public gigabit fiber rollout covers roughly 70% of households as of mid-2026.",
+      "Free public Wi-Fi (WifiBremen) is available across the city center and main squares.",
+      "5G coverage is strong in the urban core but patchier in outer districts."
+    ],
+    "last_updated": "2026-06-01"
+  },
+  "e_governance": {
+    "score": 8.0,
+    "key_facts": [
+      "The 'Bremen Online Services' portal lets residents handle most permits and registrations digitally.",
+      "Digital ID (BundID) integration allows fully paperless applications for many municipal services.",
+      "The open data portal (daten.bremen.de) publishes city datasets for public and developer use."
+    ],
+    "last_updated": "2026-06-01"
+  },
+  "smart_communication": {
+    "score": 6.8,
+    "key_facts": [
+      "The city maintains active resident-facing channels on social media and a dedicated Bremen app.",
+      "Real-time public transport and event notifications are pushed through the BSAG transit app.",
+      "Multilingual city information is available for the growing international resident and visitor base."
+    ],
+    "last_updated": "2026-06-01"
+  },
+  "stakeholders": {
+    "score": 7.5,
+    "key_facts": [
+      "Strong public-private collaboration through the Bremen Chamber of Commerce (Handelskammer).",
+      "The University of Bremen and Jacobs University anchor a growing research and innovation ecosystem.",
+      "Active civic participation via neighborhood councils (Beiräte) shaping local development decisions."
+    ],
+    "last_updated": "2026-06-01"
+  }
+}

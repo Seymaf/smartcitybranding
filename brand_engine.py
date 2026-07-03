@@ -1,9 +1,9 @@
 """Generates Bremen's brand narratives using the Anthropic Claude API.
 
-Takes the same air quality data (the city's "sustainability" smart city
-component) and traffic data (its "tourism" component) that city_pulse.py
-uses, and turns them into three distinct branding narratives — image,
-positioning, and identity — instead of a single daily summary.
+Takes data from all six smart city components — sustainability (air
+quality), tourism (traffic), digital infrastructure, e-governance, smart
+communication, and stakeholders — and turns them into three distinct
+branding narratives: image, positioning, and identity.
 """
 
 from __future__ import annotations
@@ -18,10 +18,13 @@ import anthropic
 from config import ANTHROPIC_API_KEY
 
 SYSTEM_PROMPT = """You are a city branding strategist for Bremen, Germany. You \
-translate real-time civic data into brand storytelling for two smart city \
-components: sustainability (air quality) and tourism (traffic flow). You use \
-that data as evidence for how the city feels right now, how it compares to \
-peer cities, and what makes it distinct. You never invent facts the data \
+translate real-time and curated civic data into brand storytelling across six \
+smart city components: sustainability (air quality), tourism (traffic flow), \
+digital infrastructure, e-governance, smart communication, and the local \
+stakeholder ecosystem. You weave together whichever signals are strongest — \
+some days the story is environmental, other days it's about connectivity or \
+civic innovation — to explain how the city feels right now, how it compares \
+to peer cities, and what makes it distinct. You never invent facts the data \
 doesn't support, but you're skilled at reading the human story behind the \
 numbers."""
 
@@ -62,29 +65,63 @@ class BrandNarratives:
     identity: str
 
 
-def _build_user_prompt(air_quality: dict[str, Any], traffic: dict[str, Any]) -> str:
+def _format_manual_section(label: str, data: dict[str, Any]) -> str:
+    """Formats one manually maintained component (score + key facts) as text."""
+    facts = data.get("key_facts", [])
+    facts_block = (
+        "\n".join(f"  - {fact}" for fact in facts)
+        if facts
+        else "  - (no key facts provided)"
+    )
+    return (
+        f"{label} component (manual data, last updated {data.get('last_updated')}):\n"
+        f"- Score: {data.get('score')}/10\n"
+        f"- Key facts:\n{facts_block}"
+    )
+
+
+def _build_user_prompt(
+    air_quality: dict[str, Any],
+    traffic: dict[str, Any],
+    digital_infrastructure: dict[str, Any],
+    e_governance: dict[str, Any],
+    smart_communication: dict[str, Any],
+    stakeholders: dict[str, Any],
+) -> str:
     today = datetime.now().strftime("%A, %d %B %Y")
-    return f"""Today is {today}.
 
-Here is today's smart city data for Bremen:
-
-Sustainability component — Air Quality (OpenWeatherMap, measured {air_quality.get('measured_at')}):
+    sections = [
+        f"""Sustainability component — Air Quality (OpenWeatherMap, measured {air_quality.get('measured_at')}):
 - AQI index: {air_quality.get('aqi')} ({air_quality.get('aqi_label')})
 - PM2.5: {air_quality.get('pm2_5')} µg/m³
 - PM10: {air_quality.get('pm10')} µg/m³
 - NO2: {air_quality.get('no2')} µg/m³
 - O3: {air_quality.get('o3')} µg/m³
 - SO2: {air_quality.get('so2')} µg/m³
-- CO: {air_quality.get('co')} µg/m³
-
-Tourism component — Traffic (TomTom, city center):
+- CO: {air_quality.get('co')} µg/m³""",
+        f"""Tourism component — Traffic (TomTom, city center):
 - Current average speed: {traffic.get('current_speed_kmh')} km/h
 - Free-flow speed: {traffic.get('free_flow_speed_kmh')} km/h
 - Congestion ratio: {traffic.get('congestion_ratio')}
 - Road closure reported: {traffic.get('road_closure')}
-- Confidence score: {traffic.get('confidence')}
+- Confidence score: {traffic.get('confidence')}""",
+        _format_manual_section("Digital Infrastructure", digital_infrastructure),
+        _format_manual_section("E-Governance", e_governance),
+        _format_manual_section("Smart Communication", smart_communication),
+        _format_manual_section("Stakeholders", stakeholders),
+    ]
+    data_block = "\n\n".join(sections)
 
-Using this data, write three separate brand narratives for Bremen:
+    return f"""Today is {today}.
+
+Here is today's smart city data for Bremen, across all six components:
+
+{data_block}
+
+Using this data, write three separate brand narratives for Bremen. Draw on \
+whichever components are most relevant to each narrative — you don't need to \
+mention all six in every narrative, but each narrative should be grounded in \
+specific data points, not generic city-branding language.
 
 1. BRAND IMAGE — An emotional, sensory description of what it's like to \
 experience the city right now. Make the reader feel the air, the pace of \
@@ -102,19 +139,31 @@ just one of the three and get a complete, satisfying piece of writing."""
 
 
 def generate_brand_narratives(
-    air_quality: dict[str, Any], traffic: dict[str, Any]
+    air_quality: dict[str, Any],
+    traffic: dict[str, Any],
+    digital_infrastructure: dict[str, Any],
+    e_governance: dict[str, Any],
+    smart_communication: dict[str, Any],
+    stakeholders: dict[str, Any],
 ) -> BrandNarratives:
-    """Sends sustainability + tourism data to Claude and returns three brand narratives."""
+    """Sends all six smart city components to Claude and returns three brand narratives."""
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+    user_prompt = _build_user_prompt(
+        air_quality=air_quality,
+        traffic=traffic,
+        digital_infrastructure=digital_infrastructure,
+        e_governance=e_governance,
+        smart_communication=smart_communication,
+        stakeholders=stakeholders,
+    )
 
     message = client.messages.create(
         model="claude-opus-4-8",
         max_tokens=2048,
         system=SYSTEM_PROMPT,
         output_config={"format": {"type": "json_schema", "schema": OUTPUT_SCHEMA}},
-        messages=[
-            {"role": "user", "content": _build_user_prompt(air_quality, traffic)}
-        ],
+        messages=[{"role": "user", "content": user_prompt}],
     )
 
     text = next(block.text for block in message.content if block.type == "text")

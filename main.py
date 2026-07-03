@@ -1,8 +1,10 @@
 """Runs the full Bremen City Pulse pipeline.
 
-Fetches air quality (OpenWeatherMap) and traffic (TomTom) data for Bremen,
-then uses the Anthropic Claude API to turn that data into three brand
-narratives: brand image, brand positioning, and brand identity.
+Fetches data for Bremen's six smart city components — sustainability (air
+quality), tourism (traffic), digital infrastructure, e-governance, smart
+communication, and stakeholders — then uses the Anthropic Claude API to turn
+all of it into three brand narratives: brand image, brand positioning, and
+brand identity.
 """
 
 from __future__ import annotations
@@ -15,6 +17,10 @@ import requests
 from air_quality import fetch_air_quality
 from brand_engine import generate_brand_narratives
 from config import REQUIRED_ENV_VARS
+from digital_infrastructure import fetch_digital_infrastructure
+from e_governance import fetch_e_governance
+from smart_communication import fetch_smart_communication
+from stakeholders import fetch_stakeholders
 from traffic import fetch_traffic
 
 
@@ -33,19 +39,41 @@ def main() -> int:
         return 1
 
     try:
-        print("Fetching air quality data from OpenWeatherMap...")
+        print("Fetching air quality data from OpenWeatherMap (sustainability)...")
         air_quality = fetch_air_quality()
 
-        print("Fetching traffic data from TomTom...")
+        print("Fetching traffic data from TomTom (tourism)...")
         traffic = fetch_traffic()
 
+        print("Reading digital infrastructure data...")
+        digital_infrastructure = fetch_digital_infrastructure()
+
+        print("Reading e-governance data...")
+        e_governance = fetch_e_governance()
+
+        print("Reading smart communication data...")
+        smart_communication = fetch_smart_communication()
+
+        print("Reading stakeholders data...")
+        stakeholders = fetch_stakeholders()
+
         print("Generating today's brand narratives with Claude...\n")
-        narratives = generate_brand_narratives(air_quality, traffic)
+        narratives = generate_brand_narratives(
+            air_quality=air_quality,
+            traffic=traffic,
+            digital_infrastructure=digital_infrastructure,
+            e_governance=e_governance,
+            smart_communication=smart_communication,
+            stakeholders=stakeholders,
+        )
     except requests.RequestException as exc:
         print(f"Error fetching data: {exc}", file=sys.stderr)
         return 1
+    except FileNotFoundError as exc:
+        print(f"Missing manual data file: {exc}", file=sys.stderr)
+        return 1
     except (KeyError, IndexError) as exc:
-        print(f"Unexpected API response format: {exc}", file=sys.stderr)
+        print(f"Unexpected data format: {exc}", file=sys.stderr)
         return 1
 
     print("=" * 60)
