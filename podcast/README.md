@@ -34,8 +34,12 @@ Sadece CPU tespit edilirse betik sizi uyarir: uretim yavas olur, yaklasik
 
 ## Kullanim (her hafta)
 
-1. Kendi sesinizden ~20-60 saniyelik temiz bir kayit (wav/mp3/m4a) alip
-   `~/smartcity-podcast/ses_ornegim/` klasorune koyun (tek dosya yeterli).
+1. Kendi sesinizden temiz kayit(lar) (wav/mp3/m4a) alip
+   `~/smartcity-podcast/ses_ornegim/` klasorune koyun. Tek dosya yeterlidir,
+   ama klasordeki **tum** dosyalar otomatik olarak birlikte kullanilir
+   (XTTS-v2 birden fazla referans kaydini birlestirip daha tutarli bir
+   klonlama yapar) - birkac dakikalik birden fazla kayit birakmak sonucu
+   iyilestirir.
 2. Haftalik podcast metnini `~/smartcity-podcast/scriptler/bu_hafta.txt`
    olarak kaydedin (format asagida).
 3. Calistirin:

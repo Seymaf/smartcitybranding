@@ -76,13 +76,19 @@ def parcalara_ayir(konusma_metni: str):
     return ogeler
 
 
-def referans_ses_bul():
+def referans_sesleri_bul():
+    """ses_ornegim/ klasorundeki tum referans ses dosyalarini dondurur.
+
+    XTTS-v2 birden fazla referans kaydini ayni anda kabul eder (speaker_wav
+    bir liste olabilir) ve bu, klonlama kalitesini artirir. Bu yuzden tek
+    dosya yerine klasordeki tum uygun dosyalar kullanilir.
+    """
     if not SES_ORNEGIM_DIR.exists():
-        return None
-    for dosya in sorted(SES_ORNEGIM_DIR.iterdir()):
-        if dosya.suffix.lower() in REFERENCE_EXTENSIONS:
-            return dosya
-    return None
+        return []
+    return [
+        dosya for dosya in sorted(SES_ORNEGIM_DIR.iterdir())
+        if dosya.suffix.lower() in REFERENCE_EXTENSIONS
+    ]
 
 
 def cihaz_sec():
@@ -119,12 +125,13 @@ def main():
     print(f"Script okundu: {script_yolu.name}")
     print(f"Toplam {metin_parca_sayisi} konusma parcasi seslendirilecek.\n")
 
-    referans_ses = referans_ses_bul()
-    if referans_ses is None:
+    referans_sesler = referans_sesleri_bul()
+    if not referans_sesler:
         print("UYARI: ses_ornegim/ klasorunde referans ses kaydi bulunamadi.")
         print("Modelin varsayilan sesiyle devam ediliyor. Ses ornegini bekliyorum.\n")
     else:
-        print(f"Referans ses kaydi kullaniliyor: {referans_ses.name}\n")
+        isimler = ", ".join(dosya.name for dosya in referans_sesler)
+        print(f"Referans ses kayitlari kullaniliyor ({len(referans_sesler)} dosya): {isimler}\n")
 
     print("Model yukleniyor (Coqui XTTS-v2)... ilk calistirmada model indirilecegi icin biraz surebilir.")
     from TTS.api import TTS
@@ -153,10 +160,10 @@ def main():
 
             gecici_wav = str(Path(gecici_klasor) / f"parca_{islenen_parca}.wav")
 
-            if referans_ses is not None:
+            if referans_sesler:
                 tts.tts_to_file(
                     text=deger,
-                    speaker_wav=str(referans_ses),
+                    speaker_wav=[str(dosya) for dosya in referans_sesler],
                     language="en",
                     file_path=gecici_wav,
                 )
