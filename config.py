@@ -32,6 +32,21 @@ REQUIRED_ENV_VARS = {
     "ANTHROPIC_API_KEY": ANTHROPIC_API_KEY,
 }
 
+
+def redact_secrets(text: str) -> str:
+    """Strips any configured API key value out of a string.
+
+    `requests` exception messages (e.g. HTTPError) often embed the full
+    request URL, query string included, which would otherwise leak an API
+    key passed as a query parameter into console output, logs, or archived
+    JSON files. Apply this before printing or persisting any error message
+    derived from a failed HTTP request.
+    """
+    for key in (OPENWEATHER_API_KEY, TOMTOM_API_KEY, ANTHROPIC_API_KEY, AVIATIONSTACK_API_KEY):
+        if key and key in text:
+            text = text.replace(key, "REDACTED")
+    return text
+
 # Manually maintained smart city data (no free real-time API available for
 # these components). Edit manual_data.json directly to update them.
 MANUAL_DATA_PATH = Path(__file__).parent / "manual_data.json"

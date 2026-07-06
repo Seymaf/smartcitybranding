@@ -39,7 +39,7 @@ from typing import Any
 
 import requests
 
-from config import AVIATIONSTACK_API_KEY, REQUEST_TIMEOUT
+from config import AVIATIONSTACK_API_KEY, REQUEST_TIMEOUT, redact_secrets
 
 BREMEN_AIRPORT_IATA = "BRE"
 
@@ -171,9 +171,9 @@ def fetch_flight_arrivals() -> dict[str, Any]:
         response.raise_for_status()
         payload = response.json()
     except requests.RequestException as exc:
-        return _empty_summary(f"request failed ({exc})")
+        return _empty_summary(f"request failed ({redact_secrets(str(exc))})")
     except ValueError as exc:
-        return _empty_summary(f"invalid response format ({exc})")
+        return _empty_summary(f"invalid response format ({redact_secrets(str(exc))})")
 
     if "error" in payload:
         api_error = payload["error"] or {}

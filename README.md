@@ -93,6 +93,30 @@ On each run:
 
 `brand_image` is unaffected by any of this — it always calls Claude fresh.
 
+## Daily archive
+
+Every `main.py` run writes that day's complete snapshot to
+[`archive.py`](archive.py) → `archive/<YYYY-MM-DD>.json` — the raw data
+from all eight fetchers (air quality, traffic, flight arrivals, local
+events, digital infrastructure, e-governance, smart communication,
+stakeholders) plus the three narratives, each tagged `"generated today"`
+or `"cached"`. Running `main.py` more than once on the same day
+**overwrites** that day's file — it's a daily snapshot, not a per-run log.
+This is meant to accumulate into a dated history that a future
+weekly/monthly report generator can read across many days.
+
+**`archive/` is git-tracked, not git-ignored.** Unlike `.env` and
+`cached_narratives.json`, nothing in an archive file is a secret: it's
+publicly-sourced air quality/traffic/flight-count data, the manually
+curated component facts, and generated marketing copy — no API keys, no
+personal data. (`flight_arrivals.py`'s error messages are explicitly
+redacted of API key values via `config.redact_secrets` before they can
+reach an archive file or the console — see the note in that module.)
+Since the whole point of this archive is to build a history usable by a
+future report generator, it needs to persist and be shareable across
+environments, which argues for committing it rather than leaving it
+local-only.
+
 `city_pulse.py` is an earlier, simpler two-component (air quality + traffic)
 summary generator. It's kept in the repo for reference but is no longer
 wired into `main.py`.
@@ -196,6 +220,8 @@ manual_data.json             # manually maintained data for the five sections ab
 brand_engine.py              # builds prompts and calls Claude for the 3 brand narratives
 narrative_cache.py            # caches brand_positioning/brand_identity in cached_narratives.json
 cached_narratives.json         # runtime cache (git-ignored, created on first run)
+archive.py                    # writes each day's snapshot to archive/<date>.json
+archive/                       # one JSON file per day (git-tracked — see "Daily archive" above)
 city_pulse.py                 # earlier 2-component summary generator (kept, unused by main.py)
 main.py                       # orchestrates the full pipeline end-to-end
 ```

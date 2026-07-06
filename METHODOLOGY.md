@@ -179,3 +179,20 @@ first; none exists, for the reasons below.
 6. Save the file. No code changes are required — every module reads
    `manual_data.json` fresh at runtime, so the next `python main.py` run
    picks up the update automatically.
+
+## Daily archive → future weekly/monthly reports
+
+Every `main.py` run writes `archive/<YYYY-MM-DD>.json` (see
+[`archive.py`](archive.py)): the day's raw values from all eight fetchers
+plus the three narratives with their cached/fresh status. Multiple runs on
+the same day overwrite that day's file — the archive is a dated history
+(one snapshot per day), not a per-run audit log.
+
+This is the intended data source for future weekly/monthly report
+generation: a report script can glob `archive/*.json`, read across a date
+range, and track things like how `manual_data.json` scores moved over a
+month, how often `brand_positioning` needed regenerating vs. served from
+cache, or how sustainability/tourism signals trended week over week. Because
+the archive is git-tracked (see README's "Daily archive" section for the
+sensitivity reasoning), that history is available to whoever clones the
+repo, not just whoever ran the pipeline locally.

@@ -22,8 +22,9 @@ from datetime import datetime
 import requests
 
 from air_quality import fetch_air_quality
+from archive import save_archive
 from brand_engine import generate_brand_image, generate_brand_positioning_and_identity
-from config import REQUIRED_ENV_VARS
+from config import REQUIRED_ENV_VARS, redact_secrets
 from digital_infrastructure import fetch_digital_infrastructure
 from e_governance import fetch_e_governance
 from flight_arrivals import fetch_flight_arrivals
@@ -121,8 +122,27 @@ def main() -> int:
             save_cached_narratives(brand_positioning, brand_identity)
             positioning_label = "generated today"
             identity_label = "generated today"
+
+        archive_path = save_archive(
+            raw_data={
+                "air_quality": air_quality,
+                "traffic": traffic,
+                "flight_arrivals": flight_arrivals,
+                "local_events": local_events,
+                "digital_infrastructure": digital_infrastructure,
+                "e_governance": e_governance,
+                "smart_communication": smart_communication,
+                "stakeholders": stakeholders,
+            },
+            narratives={
+                "brand_image": {"text": brand_image, "status": "generated today"},
+                "brand_positioning": {"text": brand_positioning, "status": positioning_label},
+                "brand_identity": {"text": brand_identity, "status": identity_label},
+            },
+        )
+        print(f"Archived today's data and narratives to {archive_path}")
     except requests.RequestException as exc:
-        print(f"Error fetching data: {exc}", file=sys.stderr)
+        print(f"Error fetching data: {redact_secrets(str(exc))}", file=sys.stderr)
         return 1
     except FileNotFoundError as exc:
         print(f"Missing manual data file: {exc}", file=sys.stderr)
