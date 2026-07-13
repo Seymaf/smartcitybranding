@@ -7,9 +7,9 @@
 #
 set -euo pipefail
 
-WORKDIR="$HOME/smartcity-podcast"
-VENV_DIR="$WORKDIR/.venv"
 SCRIPT_SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKDIR="$SCRIPT_SOURCE_DIR"
+VENV_DIR="$WORKDIR/.venv"
 
 say()  { printf '\n\033[1;36m==>\033[0m %s\n' "$1"; }
 warn() { printf '\n\033[1;33m[UYARI]\033[0m %s\n' "$1"; }
@@ -104,14 +104,10 @@ else
     echo "ffmpeg zaten kurulu: $(ffmpeg -version | head -1)"
 fi
 
-say "4/6 - Proje klasoru olusturuluyor: $WORKDIR"
+say "4/6 - Proje klasoru hazirlaniyor: $WORKDIR"
 
 mkdir -p "$WORKDIR/ses_ornegim" "$WORKDIR/scriptler" "$WORKDIR/cikti"
-cp -n "$SCRIPT_SOURCE_DIR/podcast_uret.py" "$WORKDIR/podcast_uret.py" 2>/dev/null || cp -f "$SCRIPT_SOURCE_DIR/podcast_uret.py" "$WORKDIR/podcast_uret.py"
-if [[ -f "$SCRIPT_SOURCE_DIR/scriptler/ornek_bu_hafta.txt" && ! -f "$WORKDIR/scriptler/ornek_bu_hafta.txt" ]]; then
-    cp "$SCRIPT_SOURCE_DIR/scriptler/ornek_bu_hafta.txt" "$WORKDIR/scriptler/ornek_bu_hafta.txt"
-fi
-echo "Klasor yapisi hazir:"
+echo "Klasor yapisi hazir (git deposunun icinde, ayri bir kopya YOK):"
 echo "  $WORKDIR/ses_ornegim/   -> referans ses kaydinizi buraya koyun (wav/mp3/m4a)"
 echo "  $WORKDIR/scriptler/     -> haftalik podcast metinleriniz (.txt)"
 echo "  $WORKDIR/cikti/         -> uretilen MP3'ler burada olusacak"

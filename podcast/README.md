@@ -8,8 +8,12 @@ bilgisayarinizda calisir (Coqui XTTS-v2).
 
 Bu betikler bir GitHub reposunda saklanir ama **kendi bilgisayarinizda**
 (Mac veya Linux) calistirilmak icin tasarlanmistir. `setup.sh` calistigi
-makinenin donanimini (Apple Silicon / NVIDIA GPU / CPU) otomatik algilar ve
-`~/smartcity-podcast/` klasorune calisir bir kurulum yerlestirir.
+makinenin donanimini (Apple Silicon / NVIDIA GPU / CPU) otomatik algilar.
+
+**Her sey git deposunun icinde calisir** (`smartcitybranding/podcast/`) -
+ayri bir kopya klasoru YOK. Yani `ses_ornegim/`, `scriptler/` ve `cikti/`
+klasorleri repo ile birlikte gelir/gider; `git pull` yaptiginizda yeni
+scriptler ve ses kayitlari otomatik olarak elinizde olur.
 
 ## Kurulum (ilk sefer)
 
@@ -25,8 +29,8 @@ bash setup.sh
 3. Donaniminiza uygun PyTorch'u kurar (MPS / CUDA / CPU).
 4. Coqui XTTS-v2 (`TTS` kutuphanesi; sorun cikarsa `coqui-tts` fork'u) ve
    `pydub`'i kurar.
-5. `~/smartcity-podcast/` altinda `ses_ornegim/`, `scriptler/`, `cikti/`
-   klasorlerini olusturur.
+5. `ses_ornegim/`, `scriptler/`, `cikti/` klasorlerini olusturur (bu klasor
+   -- yani `smartcitybranding/podcast/` -- icinde, .venv de dahil).
 6. Kisa bir test cumlesiyle sistemin calistigini dogrular.
 
 Sadece CPU tespit edilirse betik sizi uyarir: uretim yavas olur, yaklasik
@@ -34,21 +38,23 @@ Sadece CPU tespit edilirse betik sizi uyarir: uretim yavas olur, yaklasik
 
 ## Kullanim (her hafta)
 
-1. Kendi sesinizden temiz kayit(lar) (wav/mp3/m4a) alip
-   `~/smartcity-podcast/ses_ornegim/` klasorune koyun. Tek dosya yeterlidir,
-   ama klasordeki **tum** dosyalar otomatik olarak birlikte kullanilir
-   (XTTS-v2 birden fazla referans kaydini birlestirip daha tutarli bir
-   klonlama yapar) - birkac dakikalik birden fazla kayit birakmak sonucu
-   iyilestirir.
-2. Haftalik podcast metnini `~/smartcity-podcast/scriptler/bu_hafta.txt`
-   olarak kaydedin (format asagida).
-3. Calistirin:
+1. `smartcitybranding` reposunu guncelleyin:
    ```bash
-   cd ~/smartcity-podcast
+   cd ~/smartcitybranding
+   git pull
+   ```
+2. Haftalik podcast metnini `podcast/scriptler/` klasorune `.txt` olarak
+   ekleyin (repoya push edilmis olabilir, ya da kendiniz elle koyabilirsiniz).
+3. Referans ses kayitlariniz zaten `podcast/ses_ornegim/` klasorundeyse ek
+   bir sey yapmaniza gerek yok (yeni kayit her bolum icin GEREKLI DEGIL,
+   ayni kayitlar tekrar tekrar kullanilir).
+4. Calistirin:
+   ```bash
+   cd podcast
    source .venv/bin/activate
    python podcast_uret.py scriptler/bu_hafta.txt
    ```
-4. Sonuc: `~/smartcity-podcast/cikti/bu_hafta.mp3`
+5. Sonuc: `podcast/cikti/bu_hafta.mp3`
 
 ## Script dosya formati
 
@@ -60,14 +66,17 @@ Sadece CPU tespit edilirse betik sizi uyarir: uretim yavas olur, yaklasik
 - `[PAUSE]` yazan yerde 0.7 saniyelik kisa bir duraklama olur.
 - Tek basina bir satirda `---` yazan yerde 1.4 saniyelik daha uzun bir
   duraklama olur (bolum gecisi gibi dusunun).
+- Bu isaretlerin kendisi (`[PAUSE]`, `---`, `=====`, `NOT: ...`) hicbir
+  zaman seslendirilmez -- TTS'e sadece aralarindaki gercek konusma metni
+  gonderilir.
 - Geri kalan her sey metin olarak Ingilizce (`language="en"`) ve
   `ses_ornegim/` klasorundeki kaydinizla klonlanarak seslendirilir.
 
 ## Her hafta yapacaklariniz (3 madde)
 
-1. Haftalik podcast metnini yazip `scriptler/` klasorune `.txt` olarak koyun
-   (`=====` baslik blogu, gerekirse `NOT:` ve `[PAUSE]`/`---` isaretleriyle).
-2. `~/smartcity-podcast` klasorunde `python podcast_uret.py scriptler/<dosya>.txt`
+1. `cd ~/smartcitybranding && git pull` ile en guncel script'i/ses
+   kayitlarini alin (veya script'i kendiniz `podcast/scriptler/`'a koyun).
+2. `cd podcast && source .venv/bin/activate && python podcast_uret.py scriptler/<dosya>.txt`
    komutunu calistirin.
 3. `cikti/` klasorundeki MP3'u dinleyip newsletter'a ekleyin.
 
@@ -76,6 +85,12 @@ Sadece CPU tespit edilirse betik sizi uyarir: uretim yavas olur, yaklasik
 - **"ses ornegini bekliyorum" uyarisi**: `ses_ornegim/` klasorune henuz bir
   ses dosyasi koymadiniz. Koydugunuzda bir sonraki calistirmada otomatik
   kullanilir.
+- **"fatal: not a git repository"**: `git pull`'u `podcast/cikti/` gibi bir
+  alt klasorden degil, reponun kok klasorunden (`~/smartcitybranding`)
+  calistirdiginizdan emin olun.
+- **`python: can't open file 'podcast_uret.py'`**: Komutu `podcast/`
+  klasorunun icinden calistirdiginizdan emin olun (`cd
+  ~/smartcitybranding/podcast`).
 - **Cok yavas (CPU modunda)**: Beklenen bir durum; GPU'suz sistemlerde
   normaldir. Daha kisa scriptlerle calisilabilir.
 - **`TTS` kurulumu basarisiz olursa**: `setup.sh` otomatik olarak
