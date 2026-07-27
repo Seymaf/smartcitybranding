@@ -1,0 +1,38 @@
+=======================================================
+BAŞLIK: Smart City Branding — Episode 4 — Week of July 27, 2026
+
+TELAFFUZ NOTLARI (bu blok TTS'e gönderilmez, sadece okuma referansıdır):
+- BCG: "B-C-G" (harf harf, "bee-see-jee")
+- OECD: "O-E-C-D" (harf harf)
+- Ral-E: "Ral-ee" (Wall-E'ye benzer şekilde)
+=======================================================
+
+Hey, welcome back to Smart City Branding. It's the week of July 27th, and this week's news made me genuinely optimistic about where this field is headed.
+
+[PAUSE]
+
+The big one: Boston Consulting Group just published its first-ever Intelligent Cities Index. Sixty-one cities, thirty-nine countries. London tops the overall ranking, followed by Dubai, New York, Washington DC, and Amsterdam. But here's what I actually love about this report — the leadership doesn't belong to just one city. London leads on resident outcomes. Madrid leads on strategy. Dubai leads on adoption. New York leads on ways of working. Amsterdam leads on enablers. Nobody sweeps every category.
+
+[PAUSE]
+
+And that's genuinely good news — not just for the top five, but for every city listening to this who isn't on that list yet. It means there's no single formula you have to copy. BCG's own researchers make this point directly: cities don't need world-class infrastructure or huge budgets to start improving residents' lives with AI-enabled services. Meaningful progress is available from wherever a city is starting today. That's an energizing message, and I think it deserves to be said out loud.
+
+---
+
+Second story this week, from the marketing side: Tracksuit, a brand-tracking platform, acquired a startup called Hall. Hall's whole thing is measuring how brands show up inside AI assistants — so when someone asks ChatGPT or Gemini a question, Hall tracks how different brands get described. Tracksuit's CEO said it well: brand used to live only in people's minds. Now it also lives inside AI systems, and marketers are learning to pay attention to both.
+
+[PAUSE]
+
+I think that's a nice parallel to sit with this week. Cities are learning to measure their own intelligence and effort in richer ways, the way BCG's index does. And brands — including, eventually, city brands — are learning to measure perception in richer ways too, the way Tracksuit is doing. Both fields are maturing in their own direction, and there's a lot each one could learn from the other.
+
+---
+
+Two smaller stories worth a mention. Raleigh, North Carolina's CIO talked this week about training the city's AI service agent — they named it Ral-E — the same way you'd onboard a new employee. No admin access on day one, trust built slowly over time. I really liked this one, because it shows that even a technical AI rollout is, underneath it, a bit of a character decision for how a city presents itself.
+
+[PAUSE]
+
+And the OECD released a toolkit this week on how cities can get better at adopting good ideas from each other. Turns out almost eighty percent of cities try to borrow an idea from elsewhere, but fewer than half fully pull it off. Their takeaway: you can't just copy-paste a policy — it has to be reshaped to fit your own city's context to actually stick. A good reminder for anyone borrowing a strategy, a slogan, or a campaign template too.
+
+---
+
+That's the show for this week. Full writeup with every link is in this week's newsletter — link's in the show notes. Thanks for listening, and I'll catch you next week.
