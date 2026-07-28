@@ -25,7 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent
 SES_ORNEGIM_DIR = BASE_DIR / "ses_ornegim"
 CIKTI_DIR = BASE_DIR / "cikti"
 
-REFERENCE_EXTENSIONS = (".wav", ".mp3", ".m4a", ".flac", ".ogg")
+# .m4a intentionally excluded: it needs an ffmpeg backend to decode via
+# torchaudio/soundfile, while these formats load directly.
+REFERENCE_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg")
 
 
 def temizle_ve_ayikla(ham_metin: str) -> str:
