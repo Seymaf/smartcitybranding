@@ -119,15 +119,17 @@ say "5/6 - Python sanal ortami ve kutuphaneler kuruluyor (bu birkac dakika sureb
 source "$VENV_DIR/bin/activate"
 pip install --upgrade pip setuptools wheel >/dev/null
 
+# torchaudio is required by coqui-tts alongside torch; installing it
+# separately (not just torch) has bitten us before.
 case "$HW_MODE" in
     cuda)
-        pip install torch --index-url https://download.pytorch.org/whl/cu121
+        pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
         ;;
     mps)
-        pip install torch
+        pip install torch torchaudio
         ;;
     cpu)
-        pip install torch --index-url https://download.pytorch.org/whl/cpu
+        pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
         ;;
 esac
 

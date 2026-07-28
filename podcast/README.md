@@ -104,6 +104,12 @@ Sadece CPU tespit edilirse betik sizi uyarir: uretim yavas olur, yaklasik
   ```
   (`coqui-tts` ayni `TTS` Python modulunu sagladigi icin kod degismeden
   calisir.) `setup.sh` yeni kurulumlarda zaten dogrudan `coqui-tts` kurar.
+- **`ImportError: ... requires the PyTorch and Torchaudio libraries`** veya
+  **`Disabling PyTorch because PyTorch >= 2.4 is required but found ...`**:
+  `torch` ve/veya `torchaudio` eksik ya da eski. Duzeltme:
+  ```bash
+  pip install --upgrade torch torchaudio
+  ```
 - **Ilk calistirmada bir lisans onayi (y/n) sorusu cikar**: XTTS-v2 modeli
   Coqui'nin CPML lisansi ile dagitilir ve **sadece ticari olmayan
   kullanim** icin ucretsizdir. Ilk calistirmada terminalde bu sartlari
