@@ -132,9 +132,14 @@ case "$HW_MODE" in
 esac
 
 echo "TTS (Coqui XTTS-v2) kutuphanesi kuruluyor..."
-if ! pip install TTS; then
-    warn "Orijinal 'TTS' paketi kurulamadi, topluluk tarafindan surdurulen 'coqui-tts' fork'u deneniyor..."
-    pip install coqui-tts
+# Orijinal 'TTS' paketinin bakimi 2024'te birakildi ve guncel numpy/transformers
+# surumleriyle import hatasi verebiliyor (ornek: "cannot import name
+# 'is_torch_greater_or_equal'"). Topluluk tarafindan surdurulen 'coqui-tts'
+# fork'u ayni 'TTS' Python modulunu saglar ama guncel bagimliliklarla uyumlu,
+# bu yuzden dogrudan onu kuruyoruz.
+if ! pip install coqui-tts; then
+    warn "'coqui-tts' kurulamadi, orijinal 'TTS' paketi deneniyor..."
+    pip install TTS
 fi
 
 pip install pydub

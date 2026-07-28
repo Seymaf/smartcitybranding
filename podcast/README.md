@@ -27,7 +27,8 @@ bash setup.sh
 1. Donaniminizi tespit eder (Apple Silicon / NVIDIA GPU / sadece CPU).
 2. Python 3.10+ ve ffmpeg'in kurulu oldugunu dogrular, eksikse kurar.
 3. Donaniminiza uygun PyTorch'u kurar (MPS / CUDA / CPU).
-4. Coqui XTTS-v2 (`TTS` kutuphanesi; sorun cikarsa `coqui-tts` fork'u) ve
+4. Coqui XTTS-v2'yi kurar: topluluk tarafindan surdurulen `coqui-tts`
+   fork'unu (orijinal `TTS` paketinin bakimi birakildigi icin) ve
    `pydub`'i kurar.
 5. `ses_ornegim/`, `scriptler/`, `cikti/` klasorlerini olusturur (bu klasor
    -- yani `smartcitybranding/podcast/` -- icinde, .venv de dahil).
@@ -93,8 +94,16 @@ Sadece CPU tespit edilirse betik sizi uyarir: uretim yavas olur, yaklasik
   ~/smartcitybranding/podcast`).
 - **Cok yavas (CPU modunda)**: Beklenen bir durum; GPU'suz sistemlerde
   normaldir. Daha kisa scriptlerle calisilabilir.
-- **`TTS` kurulumu basarisiz olursa**: `setup.sh` otomatik olarak
-  `coqui-tts` fork'unu dener.
+- **`ImportError: cannot import name 'is_torch_greater_or_equal'` veya
+  numpy 1.x/2.x uyumsuzluk uyarisi**: Orijinal `TTS` paketi kuruluysa (eski
+  bir kurulumdan kalmis olabilir), guncel `numpy`/`transformers`
+  surumleriyle catisiyor demektir. Duzeltme:
+  ```bash
+  pip uninstall -y TTS
+  pip install coqui-tts
+  ```
+  (`coqui-tts` ayni `TTS` Python modulunu sagladigi icin kod degismeden
+  calisir.) `setup.sh` yeni kurulumlarda zaten dogrudan `coqui-tts` kurar.
 - **Ilk calistirmada bir lisans onayi (y/n) sorusu cikar**: XTTS-v2 modeli
   Coqui'nin CPML lisansi ile dagitilir ve **sadece ticari olmayan
   kullanim** icin ucretsizdir. Ilk calistirmada terminalde bu sartlari
