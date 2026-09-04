@@ -88,7 +88,7 @@ def main() -> int:
         print("Reading e-governance data...")
         e_governance = fetch_e_governance()
 
-        print("Reading smart communication data...")
+        print("Fetching smart communication data (manual audit + live GDELT mentions)...")
         smart_communication = fetch_smart_communication()
 
         print("Reading stakeholders data...")

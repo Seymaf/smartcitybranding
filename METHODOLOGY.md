@@ -4,10 +4,13 @@ This project models Bremen's smart city profile across six components.
 Sustainability is driven entirely by a live, free public API. Tourism
 blends two live APIs (traffic, flight arrivals) with one manually curated
 signal (local events) — no free API tracks "what's happening in Bremen
-today." The remaining four components have no equivalent free, per-city,
-real-time API at all — so they're maintained as periodically updated
-manual data instead. This document explains that split, the reasoning
-behind it component by component, and how to keep the manual data current.
+today." Smart communication is a similar hybrid: a manual audit of
+Bremen's own citizen-facing channels, with a live global-news-mention
+signal (GDELT) layered on top. The remaining three components have no
+equivalent free, per-city, real-time API at all — so they're maintained
+as periodically updated manual data instead. This document explains that
+split, the reasoning behind it component by component, and how to keep
+the manual data current.
 
 ## Why hybrid, not all-API or all-manual
 
@@ -66,6 +69,18 @@ mention of the outage. Two free-tier constraints shape the implementation:
 standalone manual components, but conceptually feeds tourism rather than
 being its own top-level component.
 
+**Smart communication is a hybrid, like tourism.** No API measures
+"citizen engagement quality" for a city's own communication channels, so
+that half stays a manual audit in `manual_data.json` (see below). But how
+much a city is talked about in global news right now *is* a free, live,
+per-city-queryable signal — the [GDELT DOC 2.0 API](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/)
+needs no API key/signup and returns matching articles for a search term
+within a chosen time window. `smart_communication.py` queries it for
+"Bremen" over the last 24 hours on every run, derives a rough
+`media_visibility_score` from the mention count, and adds a couple of
+real headlines to `key_facts`. If the request fails, it falls back to the
+manual data alone — this is an enrichment, not a required signal.
+
 ## Manually maintained data (periodic input)
 
 Five sections read from [`manual_data.json`](manual_data.json) via a
@@ -73,7 +88,11 @@ shared loader (`config.load_manual_data`): four standalone components
 (e-governance, digital infrastructure, stakeholders, smart communication)
 plus local events, which feeds into the tourism component alongside
 traffic and flight arrivals. Each was evaluated for a free real-time API
-first; none exists, for the reasons below.
+first; none exists for the manual data itself, for the reasons below.
+(Smart communication is the exception that gets a live layer on top — see
+"Smart communication is a hybrid" above — but its `manual_data.json`
+section, the channels/chatbot audit, is still maintained the same way as
+the other three.)
 
 ### E-Governance (`e_governance.py`)
 
@@ -123,24 +142,29 @@ first; none exists, for the reasons below.
   - bremenports Smart Port strategy updates
   - Governikus product and partnership announcements
 
-### Smart Communication (`smart_communication.py`)
+### Smart Communication (`smart_communication.py`) — hybrid
 
-- **Why manual:** No API aggregates "citizen engagement quality" across a
-  city's official communication channels. Assessing it requires an actual
-  audit of social media activity, response rates, and app usage.
+- **Why the manual half is manual:** No API aggregates "citizen engagement
+  quality" across a city's official communication channels. Assessing it
+  requires an actual audit of social media activity, response rates, and
+  app usage.
 - **Current status:** ✅ **Verified.** `manual_data.json` now reflects a
   real audit of Bremen's official channels (tourism Instagram following and
   post cadence, WFB Bremen's dedicated tech channel, the discontinued city
   X/Twitter account) rather than the earlier placeholder estimate.
-- **Recommended update frequency:** Quarterly — social platform strategy
-  and follower/engagement figures shift slowly enough that a monthly check
-  isn't necessary once a verified baseline is in place.
-- **Data sources to consult:**
+- **Recommended update frequency (manual half):** Quarterly — social
+  platform strategy and follower/engagement figures shift slowly enough
+  that a monthly check isn't necessary once a verified baseline is in place.
+- **Data sources to consult (manual half):**
   - Official Bremen city social media accounts — posting frequency,
     engagement rates
   - Bremen city app / BSAG transit app store reviews and usage stats
   - City of Bremen press/communications office reports
   - Citizen e-participation platforms, if one exists for Bremen
+- **The live half:** `_fetch_gdelt_mentions()` queries the GDELT DOC 2.0
+  API for "Bremen" over the last 24 hours on every run — no update
+  schedule needed, it's fetched fresh every time. See "Smart communication
+  is a hybrid" above for why this doesn't need manual upkeep.
 
 ### Local Events (`local_events.py`) — feeds tourism, not standalone
 

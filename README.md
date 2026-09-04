@@ -12,8 +12,16 @@ positioning, and identity — using the Anthropic Claude API.
 | Tourism | [`traffic.py`](traffic.py) + [`flight_arrivals.py`](flight_arrivals.py) + [`local_events.py`](local_events.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier, live) + [AviationStack Flights API](https://aviationstack.com/) (free tier, live) + `manual_data.json` — see note below |
 | Digital infrastructure | [`digital_infrastructure.py`](digital_infrastructure.py) | `manual_data.json` (see note below) |
 | E-governance | [`e_governance.py`](e_governance.py) | `manual_data.json` |
-| Smart communication | [`smart_communication.py`](smart_communication.py) | `manual_data.json` |
+| Smart communication | [`smart_communication.py`](smart_communication.py) | `manual_data.json` (citizen-facing channels/chatbot ecosystem) + [GDELT DOC 2.0 API](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) (free, no key required, live global news mentions) |
 | Stakeholders | [`stakeholders.py`](stakeholders.py) | `manual_data.json` |
+
+**Smart communication is a hybrid, like tourism:** the manual audit of
+Bremen's own chatbot/social-media ecosystem stays in `manual_data.json` —
+no API measures "citizen engagement quality" for a city's own channels —
+but `smart_communication.py` layers a live `media_visibility_score` and a
+couple of real headlines on top, fetched fresh from GDELT on every run.
+GDELT needs no API key, and the module falls back to manual-only data if
+the request fails, so this never blocks the pipeline.
 
 **Why digital infrastructure is manual too:** there's no simple free,
 queryable REST API for city-level internet speed/connectivity comparable to
@@ -214,7 +222,7 @@ flight_arrivals.py           # AviationStack Flights API client (tourism, option
 local_events.py               # reads manual_data.json (tourism: festivals/events)
 digital_infrastructure.py   # reads manual_data.json (no free live API available)
 e_governance.py              # reads manual_data.json
-smart_communication.py       # reads manual_data.json
+smart_communication.py       # manual_data.json + live GDELT DOC 2.0 mentions (no key needed)
 stakeholders.py               # reads manual_data.json
 manual_data.json             # manually maintained data for the five sections above
 brand_engine.py              # builds prompts and calls Claude for the 3 brand narratives
