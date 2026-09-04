@@ -185,10 +185,20 @@ def main():
     for parca in parcalar_audio:
         birlesik_ses += parca
 
-    cikti_yolu = CIKTI_DIR / f"{script_yolu.stem}.mp3"
-    birlesik_ses.export(cikti_yolu, format="mp3", bitrate="192k")
+    # Once her zaman calisan bir .wav yazilir (ffmpeg gerektirmez); mp3'e
+    # cevirme (ffmpeg gerektirir) basarisiz olursa bile uretilen ses kaybolmaz.
+    cikti_yolu_wav = CIKTI_DIR / f"{script_yolu.stem}.wav"
+    birlesik_ses.export(cikti_yolu_wav, format="wav")
 
-    print(f"\nTamamlandi! Podcast kaydedildi: {cikti_yolu}")
+    cikti_yolu_mp3 = CIKTI_DIR / f"{script_yolu.stem}.mp3"
+    try:
+        birlesik_ses.export(cikti_yolu_mp3, format="mp3", bitrate="192k")
+        cikti_yolu_wav.unlink()
+        print(f"\nTamamlandi! Podcast kaydedildi: {cikti_yolu_mp3}")
+    except FileNotFoundError:
+        print(f"\nffmpeg bulunamadi, mp3'e cevrilemedi. Ham ses burada kaydedildi: {cikti_yolu_wav}")
+        print(f"ffmpeg kurduktan sonra su komutla mp3'e cevirebilirsiniz:")
+        print(f'  ffmpeg -i "{cikti_yolu_wav}" -b:a 192k "{cikti_yolu_mp3}"')
 
 
 if __name__ == "__main__":
