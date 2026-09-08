@@ -2,10 +2,10 @@
 
 Takes data from all six smart city components — sustainability (air
 quality), tourism (live traffic, real-time flight arrivals showing who is
-actually visiting right now, and curated local events/festivals),
-digital infrastructure, e-governance, smart communication, and
-stakeholders — and turns it into three distinct branding narratives:
-image, positioning, and identity.
+actually visiting right now, Wikipedia pageview interest, and curated
+local events/festivals), digital infrastructure, e-governance, smart
+communication, and stakeholders — and turns it into three distinct
+branding narratives: image, positioning, and identity.
 
 Split into two independent calls so main.py can cache brand_positioning
 and brand_identity separately from brand_image (see narrative_cache.py):
@@ -31,8 +31,9 @@ from config import ANTHROPIC_API_KEY
 SYSTEM_PROMPT = """You are a city branding strategist for Bremen, Germany. You \
 translate real-time and curated civic data into brand storytelling across six \
 smart city components: sustainability (air quality), tourism (traffic flow, \
-real-time flight arrival data showing who is actually visiting right now, and \
-curated local events/festivals), digital infrastructure, e-governance, smart \
+real-time flight arrival data showing who is actually visiting right now, \
+Wikipedia pageview interest, and curated local events/festivals), digital \
+infrastructure, e-governance, smart \
 communication, and the local stakeholder ecosystem. You weave together \
 whichever signals are strongest — some days the story is environmental, \
 other days it's about connectivity, civic innovation, who's landing at the \
@@ -40,8 +41,8 @@ airport today, or what festival is filling the streets — to explain how the \
 city feels right now, how it compares to peer cities, and what makes it \
 distinct. You never invent facts the data doesn't support, but you're \
 skilled at reading the human story behind the numbers. When flight arrival \
-data is unavailable, simply don't reference it — never mention the outage \
-or apologize for missing data."""
+or Wikipedia interest data is unavailable, simply don't reference it — \
+never mention the outage or apologize for missing data."""
 
 IMAGE_OUTPUT_SCHEMA = {
     "type": "object",
@@ -137,6 +138,7 @@ def _format_tourism_section(tourism: dict[str, Any]) -> str:
     """
     traffic = tourism.get("traffic", {})
     flight_arrivals = tourism.get("flight_arrivals", {})
+    wikipedia_interest = tourism.get("wikipedia_interest", {})
     local_events = tourism.get("local_events", {})
 
     lines = [
@@ -163,6 +165,14 @@ def _format_tourism_section(tourism: dict[str, Any]) -> str:
             f"  - Origin countries/cities represented: {origins}",
             "  - Notable patterns:",
             patterns_block,
+        ]
+
+    if wikipedia_interest.get("available"):
+        lines += [
+            f"- Wikipedia interest (English article, 7-day window ending {wikipedia_interest.get('window_end')}):",
+            f"  - Total pageviews: {wikipedia_interest.get('total_views_7d')}",
+            f"  - Daily average: {wikipedia_interest.get('daily_average')}",
+            f"  - Most recent day: {wikipedia_interest.get('latest_day_views')}",
         ]
 
     if local_events:

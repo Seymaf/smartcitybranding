@@ -33,6 +33,7 @@ from narrative_cache import load_cached_narratives, save_cached_narratives
 from smart_communication import fetch_smart_communication
 from stakeholders import fetch_stakeholders
 from traffic import fetch_traffic
+from wikipedia_interest import fetch_wikipedia_interest
 
 
 def check_env() -> list[str]:
@@ -70,15 +71,19 @@ def main() -> int:
         print("Fetching air quality data from OpenWeatherMap (sustainability)...")
         air_quality = fetch_air_quality()
 
-        print("Fetching tourism data (TomTom traffic + AviationStack arrivals + local events)...")
+        print("Fetching tourism data (TomTom traffic + AviationStack arrivals + Wikipedia interest + local events)...")
         traffic = fetch_traffic()
         flight_arrivals = fetch_flight_arrivals()
         if not flight_arrivals.get("available"):
             print(f"  (flight arrivals unavailable: {flight_arrivals.get('error')})")
+        wikipedia_interest = fetch_wikipedia_interest()
+        if not wikipedia_interest.get("available"):
+            print(f"  (Wikipedia interest unavailable: {wikipedia_interest.get('error')})")
         local_events = fetch_local_events()
         tourism = {
             "traffic": traffic,
             "flight_arrivals": flight_arrivals,
+            "wikipedia_interest": wikipedia_interest,
             "local_events": local_events,
         }
 
@@ -128,6 +133,7 @@ def main() -> int:
                 "air_quality": air_quality,
                 "traffic": traffic,
                 "flight_arrivals": flight_arrivals,
+                "wikipedia_interest": wikipedia_interest,
                 "local_events": local_events,
                 "digital_infrastructure": digital_infrastructure,
                 "e_governance": e_governance,

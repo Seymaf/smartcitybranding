@@ -9,8 +9,8 @@ positioning, and identity — using the Anthropic Claude API.
 | Component | Module(s) | Data source |
 | --- | --- | --- |
 | Sustainability | [`air_quality.py`](air_quality.py) | [OpenWeatherMap Air Pollution API](https://openweathermap.org/api/air-pollution) (free tier, live) |
-| Tourism | [`traffic.py`](traffic.py) + [`flight_arrivals.py`](flight_arrivals.py) + [`local_events.py`](local_events.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier, live) + [AviationStack Flights API](https://aviationstack.com/) (free tier, live) + `manual_data.json` — see note below |
-| Digital infrastructure | [`digital_infrastructure.py`](digital_infrastructure.py) | `manual_data.json` (see note below) |
+| Tourism | [`traffic.py`](traffic.py) + [`flight_arrivals.py`](flight_arrivals.py) + [`wikipedia_interest.py`](wikipedia_interest.py) + [`local_events.py`](local_events.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier, live) + [AviationStack Flights API](https://aviationstack.com/) (free tier, live) + [Wikimedia Pageviews API](https://wikimedia.org/api/rest_v1/) (free, no key required, live) + `manual_data.json` — see note below |
+| Digital infrastructure | [`digital_infrastructure.py`](digital_infrastructure.py) | `manual_data.json` (fiber/5G rollout audit) + [PeeringDB API](https://www.peeringdb.com/apidocs/) (free, no key required, live interconnection-facility presence) |
 | E-governance | [`e_governance.py`](e_governance.py) | `manual_data.json` |
 | Smart communication | [`smart_communication.py`](smart_communication.py) | `manual_data.json` (citizen-facing channels/chatbot ecosystem) + [GDELT DOC 2.0 API](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) (free, no key required, live global news mentions) |
 | Stakeholders | [`stakeholders.py`](stakeholders.py) | `manual_data.json` |
@@ -23,20 +23,25 @@ couple of real headlines on top, fetched fresh from GDELT on every run.
 GDELT needs no API key, and the module falls back to manual-only data if
 the request fails, so this never blocks the pipeline.
 
-**Why digital infrastructure is manual too:** there's no simple free,
-queryable REST API for city-level internet speed/connectivity comparable to
-OpenWeatherMap or TomTom. Ookla's live data sits behind the paid Speedtest
-Intelligence API; its free option (Ookla Open Data on AWS) is a bulk
-historical Parquet dataset meant for offline analysis, not a
-"give me today's number for Bremen" endpoint. So `digital_infrastructure.py`
-follows the same `manual_data.json` pattern as the other three components.
+**Digital infrastructure is a hybrid too, for a different reason:** there's
+no simple free, queryable REST API for city-level internet *speed* —
+Ookla's live data sits behind the paid Speedtest Intelligence API, and its
+free option (Ookla Open Data on AWS) is a bulk historical Parquet dataset,
+not a "give me today's number for Bremen" endpoint. So the manual
+`connectivity_score`/`key_facts` audit stays. But `digital_infrastructure.py`
+now also layers on a live `infrastructure_presence_score` from the
+PeeringDB API (free, no key) — how many internet exchange/data-centre
+facilities are registered in Bremen right now. It's a presence signal, not
+a speed measurement, and falls back to manual-only data if PeeringDB is
+unreachable.
 
-**Tourism has three data sources, not three components:** `traffic.py`,
-`flight_arrivals.py`, and `local_events.py` are separate modules for code
-organization, but `main.py` combines their output into one `tourism` dict
-before handing it to `brand_engine.py`, and the prompt presents it as a
-single "Tourism component" with a traffic subsection, a flight arrivals
-subsection, and a local events subsection — not three independent inputs.
+**Tourism has four data sources, not four components:** `traffic.py`,
+`flight_arrivals.py`, `wikipedia_interest.py`, and `local_events.py` are
+separate modules for code organization, but `main.py` combines their
+output into one `tourism` dict before handing it to `brand_engine.py`, and
+the prompt presents it as a single "Tourism component" with a traffic
+subsection, a flight arrivals subsection, a Wikipedia interest subsection,
+and a local events subsection — not four independent inputs.
 
 - `flight_arrivals.py` fetches today's arrivals at Bremen Airport (BRE)
   and summarizes total arrival count, origin countries/cities, and
@@ -48,6 +53,11 @@ subsection, and a local events subsection — not three independent inputs.
   doesn't return a country field per flight, so this module maps a
   best-effort static table of common departure airport codes to
   countries, falling back to the airport name otherwise.
+- `wikipedia_interest.py` fetches Bremen's English Wikipedia pageviews over
+  a 7-day window (via the free, no-key Wikimedia Pageviews API) as a proxy
+  for global research/travel interest. Also optional, following the same
+  pattern as flight arrivals: any failure returns an "unavailable" summary
+  rather than raising.
 - `local_events.py` reads Bremen's current festivals/events (e.g.
   Breminale, Musikfest Bremen, Open Space Domshof) from `manual_data.json`
   — no free API tracks "what's happening in Bremen right now" either, so
@@ -57,10 +67,12 @@ subsection, and a local events subsection — not three independent inputs.
 ## How it works
 
 1. **Fetch** — `main.py` calls `fetch_air_quality`, plus `fetch_traffic` +
-   `fetch_flight_arrivals` + `fetch_local_events` (combined into one
-   `tourism` dict), and four reads from `manual_data.json`
-   (`fetch_digital_infrastructure`, `fetch_e_governance`,
-   `fetch_smart_communication`, `fetch_stakeholders`).
+   `fetch_flight_arrivals` + `fetch_wikipedia_interest` + `fetch_local_events`
+   (combined into one `tourism` dict), and four component fetchers that each
+   start from `manual_data.json` (`fetch_digital_infrastructure`,
+   `fetch_e_governance`, `fetch_smart_communication`, `fetch_stakeholders`)
+   — two of which (digital infrastructure, smart communication) also layer
+   on a live, no-key API call (PeeringDB, GDELT respectively).
 2. **Generate** — [`brand_engine.py`](brand_engine.py) makes two Claude
    (`claude-opus-4-8`) calls:
    - **Brand image** — an emotional, sensory description of experiencing
@@ -105,9 +117,9 @@ On each run:
 
 Every `main.py` run writes that day's complete snapshot to
 [`archive.py`](archive.py) → `archive/<YYYY-MM-DD>.json` — the raw data
-from all eight fetchers (air quality, traffic, flight arrivals, local
-events, digital infrastructure, e-governance, smart communication,
-stakeholders) plus the three narratives, each tagged `"generated today"`
+from all nine fetchers (air quality, traffic, flight arrivals, Wikipedia
+interest, local events, digital infrastructure, e-governance, smart
+communication, stakeholders) plus the three narratives, each tagged `"generated today"`
 or `"cached"`. Running `main.py` more than once on the same day
 **overwrites** that day's file — it's a daily snapshot, not a per-run log.
 This is meant to accumulate into a dated history that a future
@@ -219,8 +231,9 @@ config.py                  # env var loading, shared constants, manual_data.json
 air_quality.py              # OpenWeatherMap Air Pollution API client (sustainability)
 traffic.py                  # TomTom Traffic Flow API client (tourism)
 flight_arrivals.py           # AviationStack Flights API client (tourism, optional)
+wikipedia_interest.py         # Wikimedia Pageviews API client (tourism, optional, no key needed)
 local_events.py               # reads manual_data.json (tourism: festivals/events)
-digital_infrastructure.py   # reads manual_data.json (no free live API available)
+digital_infrastructure.py   # manual_data.json + live PeeringDB facility presence (no key needed)
 e_governance.py              # reads manual_data.json
 smart_communication.py       # manual_data.json + live GDELT DOC 2.0 mentions (no key needed)
 stakeholders.py               # reads manual_data.json

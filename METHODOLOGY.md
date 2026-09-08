@@ -2,15 +2,17 @@
 
 This project models Bremen's smart city profile across six components.
 Sustainability is driven entirely by a live, free public API. Tourism
-blends two live APIs (traffic, flight arrivals) with one manually curated
-signal (local events) — no free API tracks "what's happening in Bremen
-today." Smart communication is a similar hybrid: a manual audit of
-Bremen's own citizen-facing channels, with a live global-news-mention
-signal (GDELT) layered on top. The remaining three components have no
-equivalent free, per-city, real-time API at all — so they're maintained
-as periodically updated manual data instead. This document explains that
-split, the reasoning behind it component by component, and how to keep
-the manual data current.
+blends two live APIs (traffic, flight arrivals, plus Wikipedia pageview
+interest) with one manually curated signal (local events) — no free API
+tracks "what's happening in Bremen today." Smart communication and digital
+infrastructure are similar hybrids: each keeps a manual, judgment-based
+audit at its core (citizen-engagement quality, connectivity rollout) and
+layers a live, no-key API signal on top (GDELT global news mentions;
+PeeringDB interconnection-facility presence). The remaining two components
+(e-governance, stakeholders) have no equivalent free, per-city, real-time
+API at all — so they're maintained as periodically updated manual data
+instead. This document explains that split, the reasoning behind it
+component by component, and how to keep the manual data current.
 
 ## Why hybrid, not all-API or all-manual
 
@@ -29,22 +31,22 @@ never presented as more current or more certain than they actually are.
 | Component | Module(s) | API | What it fetches |
 | --- | --- | --- | --- |
 | Sustainability | [`air_quality.py`](air_quality.py) | [OpenWeatherMap Air Pollution API](https://openweathermap.org/api/air-pollution) (free tier) | AQI index + PM2.5, PM10, NO2, O3, SO2, CO concentrations |
-| Tourism | [`traffic.py`](traffic.py) + [`flight_arrivals.py`](flight_arrivals.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier) + [AviationStack Flights API](https://aviationstack.com/) (free tier) | Current vs. free-flow speed, congestion ratio, road closures; plus today's arrival count, origin countries/cities, and notable patterns (e.g. "5 arrivals from Turkey") |
+| Tourism | [`traffic.py`](traffic.py) + [`flight_arrivals.py`](flight_arrivals.py) + [`wikipedia_interest.py`](wikipedia_interest.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier) + [AviationStack Flights API](https://aviationstack.com/) (free tier) + [Wikimedia Pageviews API](https://wikimedia.org/api/rest_v1/) (free, no key) | Current vs. free-flow speed, congestion ratio, road closures; today's arrival count, origin countries/cities, and notable patterns (e.g. "5 arrivals from Turkey"); 7-day English Wikipedia pageview trend |
 
 Both underlying APIs are simple, free, city-coordinate-keyed REST
 endpoints — exactly the shape this pipeline needs — so they're queried
 fresh on every `main.py` run. No manual step is needed or possible here;
 the data is only ever as current as the last API response.
 
-**Tourism is one component with three data sources, not three
-components.** `traffic.py`, `flight_arrivals.py`, and `local_events.py`
-are separate modules purely for code organization (different sources,
-different response shapes). `main.py` combines their output into a single
-`tourism` dict (`{"traffic": ..., "flight_arrivals": ..., "local_events":
-...}`) before passing it to `brand_engine.py`, which formats it as one
-"Tourism component" section — consistent with the six-component framework
-(sustainability, tourism, digital infrastructure, e-governance, smart
-communication, stakeholders).
+**Tourism is one component with four data sources, not four
+components.** `traffic.py`, `flight_arrivals.py`, `wikipedia_interest.py`,
+and `local_events.py` are separate modules purely for code organization
+(different sources, different response shapes). `main.py` combines their
+output into a single `tourism` dict (`{"traffic": ..., "flight_arrivals":
+..., "wikipedia_interest": ..., "local_events": ...}`) before passing it
+to `brand_engine.py`, which formats it as one "Tourism component" section
+— consistent with the six-component framework (sustainability, tourism,
+digital infrastructure, e-governance, smart communication, stakeholders).
 
 **Flight arrivals is optional within tourism.** `fetch_flight_arrivals()`
 never raises — if the API key is missing, the request fails, or the free
@@ -64,7 +66,16 @@ mention of the outage. Two free-tier constraints shape the implementation:
   European/leisure route network) to country names, falling back to the
   airport's own name for anything not in that table.
 
-**Local events is the third tourism source, manually maintained.** See
+**Wikipedia interest is also optional within tourism.**
+`fetch_wikipedia_interest()` follows the same never-raise pattern as
+flight arrivals — any failure (network error, unexpected response shape)
+returns `{"available": False, "error": "..."}` instead. It queries the
+free [Wikimedia Pageviews API](https://wikimedia.org/api/rest_v1/) (no key
+needed) for the English "Bremen" article over a 7-day window ending 2 days
+back — pageview counts usually aren't finalized for the most recent day or
+two, so this avoids querying a window that isn't fully settled yet.
+
+**Local events is the fourth tourism source, manually maintained.** See
 "Local Events" below — it lives in `manual_data.json` alongside the four
 standalone manual components, but conceptually feeds tourism rather than
 being its own top-level component.
@@ -76,10 +87,23 @@ much a city is talked about in global news right now *is* a free, live,
 per-city-queryable signal — the [GDELT DOC 2.0 API](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/)
 needs no API key/signup and returns matching articles for a search term
 within a chosen time window. `smart_communication.py` queries it for
-"Bremen" over the last 24 hours on every run, derives a rough
-`media_visibility_score` from the mention count, and adds a couple of
-real headlines to `key_facts`. If the request fails, it falls back to the
-manual data alone — this is an enrichment, not a required signal.
+"Bremen Germany" (both terms required, to avoid matching the unrelated
+small US towns also named Bremen) over the last 24 hours on every run,
+derives a rough `media_visibility_score` from the mention count, and adds
+a couple of real headlines to `key_facts`. If the request fails, it falls
+back to the manual data alone — this is an enrichment, not a required
+signal.
+
+**Digital infrastructure is a hybrid too, for a different reason.** The
+manual `connectivity_score`/`key_facts` audit stays, for the same reason
+explained under "Digital Infrastructure" below (speed/connectivity has no
+free live API). But *facility presence* does have one: the
+[PeeringDB API](https://www.peeringdb.com/apidocs/) (free, no key) lists
+internet exchange points and data-centre facilities searchable by city.
+`digital_infrastructure.py` queries it for Bremen on every run, derives an
+`infrastructure_presence_score` from the facility count, and adds facility
+names to `key_facts`. It's a presence signal, not a speed measurement, and
+falls back to manual-only data if PeeringDB is unreachable.
 
 ## Manually maintained data (periodic input)
 
@@ -89,10 +113,11 @@ shared loader (`config.load_manual_data`): four standalone components
 plus local events, which feeds into the tourism component alongside
 traffic and flight arrivals. Each was evaluated for a free real-time API
 first; none exists for the manual data itself, for the reasons below.
-(Smart communication is the exception that gets a live layer on top — see
-"Smart communication is a hybrid" above — but its `manual_data.json`
-section, the channels/chatbot audit, is still maintained the same way as
-the other three.)
+(Smart communication and digital infrastructure are the two exceptions
+that get a live layer on top — see "Smart communication is a hybrid" and
+"Digital infrastructure is a hybrid too" above — but their
+`manual_data.json` sections are still maintained the same way as
+e-governance and stakeholders.)
 
 ### E-Governance (`e_governance.py`)
 
@@ -111,22 +136,27 @@ the other three.)
   - National eGovernment benchmarks (e.g. Initiative D21's eGovernment
     Monitor) for comparative context when scoring
 
-### Digital Infrastructure (`digital_infrastructure.py`)
+### Digital Infrastructure (`digital_infrastructure.py`) — hybrid
 
-- **Why manual:** Live, per-city internet speed/connectivity data (e.g.
-  Ookla) is either paid (Speedtest Intelligence API) or available only as a
-  bulk historical dataset, not a queryable live endpoint. Rollout of fiber
-  and 5G coverage also moves on a timescale of months, so live polling
-  wouldn't add value even if it existed.
-- **Recommended update frequency:** Semi-annually, or immediately after a
-  significant rollout milestone (new fiber/5G coverage announcement).
-- **Data sources to consult:**
+- **Why the manual half is manual:** Live, per-city internet
+  speed/connectivity data (e.g. Ookla) is either paid (Speedtest
+  Intelligence API) or available only as a bulk historical dataset, not a
+  queryable live endpoint. Rollout of fiber and 5G coverage also moves on
+  a timescale of months, so live polling wouldn't add value even if it
+  existed.
+- **Recommended update frequency (manual half):** Semi-annually, or
+  immediately after a significant rollout milestone (new fiber/5G
+  coverage announcement).
+- **Data sources to consult (manual half):**
   - Bundesnetzagentur Breitbandatlas (federal broadband atlas)
   - Bremen's Regional Broadband Center (regionaler Breitbandkoordinator)
     reports
   - Telecom provider coverage maps (Deutsche Telekom, Vodafone,
     Telefónica/O2) for 5G and fiber footprint
   - Bremen Senate digital infrastructure press releases
+- **The live half:** `_fetch_peeringdb_facilities()` queries the PeeringDB
+  API for facilities in Bremen, Germany on every run — no update schedule
+  needed. See "Digital infrastructure is a hybrid too" above.
 
 ### Stakeholders (`stakeholders.py`)
 
@@ -207,7 +237,7 @@ the other three.)
 ## Daily archive → future weekly/monthly reports
 
 Every `main.py` run writes `archive/<YYYY-MM-DD>.json` (see
-[`archive.py`](archive.py)): the day's raw values from all eight fetchers
+[`archive.py`](archive.py)): the day's raw values from all nine fetchers
 plus the three narratives with their cached/fresh status. Multiple runs on
 the same day overwrite that day's file — the archive is a dated history
 (one snapshot per day), not a per-run audit log.
