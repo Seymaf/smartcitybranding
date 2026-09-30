@@ -5,3 +5,4 @@ __pycache__/
 venv/
 cached_narratives.json
 .DS_Store
+.pytest_cache/

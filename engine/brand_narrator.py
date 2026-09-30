@@ -1,47 +1,206 @@
-"""AI Brand Narrative generator powered by Anthropic Claude with offline grounding support."""
+"""Brand narratives written by Claude, grounded in an explicit evidence ledger.
+
+Anti-greenwashing by construction:
+- Claude sees only the metrics that were actually obtained this run, each
+  with an id, its evidence type (measured / benchmark / curated) and its
+  geographic level, plus the integrity flags.
+- Every narrative must return the ids of the metrics it relies on; ids that
+  don't exist in the ledger are surfaced as warnings on the narrative.
+- Without an API key, or without any evidence, no narrative is produced —
+  there is no canned fallback text.
+
+brand_image regenerates every run (live signals). brand_positioning and
+brand_identity are cached until the slow-moving evidence (curated data,
+published benchmarks, annual indicators) changes — see narrative_cache.py.
+"""
 from __future__ import annotations
-from datetime import datetime, timezone
-from typing import Dict
-from core.config import ANTHROPIC_API_KEY
-from core.models import BrandNarrative, BrandingPillar, CityBrandPulse
+
+import json
+import logging
+from typing import Dict, List, Optional
+
+from core.config import credential
+from core.models import BrandingPillar, BrandNarrative, CityBrandPulse, EvidenceType, GeoLevel, utc_now_iso
+
+logger = logging.getLogger(__name__)
+
+MODEL = "claude-opus-5-5"
+
+SYSTEM_PROMPT = """You are the brand strategist of a company whose mission is to \
+identify cities and global brands that protect democratic, participatory and \
+innovative values, and to show their brand value without greenwashing.
+
+You turn an evidence ledger about one city into brand narratives. The ledger is \
+the only thing you know about the city today. Work by these rules:
+
+- Every factual statement must rest on a ledger entry, and you must list the ids \
+of the entries you used. If the ledger doesn't support a claim, leave it out.
+- Say what kind of evidence a claim rests on when it matters: "measured" entries \
+are live data from this run; "benchmark" entries are published indices; \
+"curated" entries are the city's own or our analysts' assessments and must be \
+framed as assessments, not as proven facts. National-proxy entries describe the \
+country, not the city, and must be framed that way.
+- Respect the integrity flags. Where a component has no evidence or only \
+self-reported evidence, make no claims about it (or only clearly hedged ones for \
+self-reported evidence). Never make environmental or climate claims unless \
+measured sustainability entries support them.
+- If headline_verifiable is false, don't cite the vitality index or pillar scores \
+as verified results.
+- Concrete numbers beat adjectives. No generic city-marketing superlatives.
+- Don't discuss data outages or missing sources in the narrative text itself; \
+simply don't write about what isn't there."""
+
+
+def _schema(fields: List[str]) -> dict:
+    narrative = {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string"},
+            "cited_metrics": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["text", "cited_metrics"],
+        "additionalProperties": False,
+    }
+    return {
+        "type": "object",
+        "properties": {f: narrative for f in fields},
+        "required": fields,
+        "additionalProperties": False,
+    }
+
+
+def evidence_ledger(pulse: CityBrandPulse) -> Dict[str, dict]:
+    ledger = {}
+    for component in pulse.components.values():
+        for m in component.metrics:
+            ledger[f"{component.component.value}.{m.name}"] = {
+                "label": m.display_name,
+                "value": m.raw_value,
+                "unit": m.unit,
+                "score_0_100": m.score,
+                "evidence": m.evidence_type.value,
+                "geo": m.geo_level.value,
+                "source": m.source_id,
+                "note": m.note,
+            }
+    return ledger
+
+
+def _data_block(pulse: CityBrandPulse, ledger: Dict[str, dict]) -> str:
+    summary = {
+        "city": f"{pulse.city.name}, {pulse.city.country}",
+        "date": pulse.timestamp[:10],
+        "vitality_index": pulse.vitality_index,
+        "evidence_coverage": pulse.evidence_coverage,
+        "measured_share": pulse.measured_share,
+        "headline_verifiable": pulse.headline_verifiable,
+        "pillars": {k: p.score for k, p in pulse.pillars.items()},
+        "components": {
+            k: {"score": c.score, "measured_share": c.measured_share, "curated_key_facts": c.key_facts}
+            for k, c in pulse.components.items()
+        },
+        "values": {k: v.score for k, v in pulse.values.items()},
+        "integrity_flags": [{"severity": f.severity, "code": f.code, "message": f.message} for f in pulse.integrity_flags if f.severity != "info"],
+    }
+    return (
+        "<summary>\n" + json.dumps(summary, indent=2, ensure_ascii=False) + "\n</summary>\n\n"
+        "<evidence_ledger>\n" + json.dumps(ledger, indent=2, ensure_ascii=False) + "\n</evidence_ledger>"
+    )
+
+
+IMAGE_TASK = """Write BRAND IMAGE: how the city is experienced and perceived right now — \
+the lived, daily reality a visitor or resident would recognize, grounded in today's \
+measured signals (air, mobility, arrivals, attention, public mood). 120-200 words."""
+
+POSITIONING_IDENTITY_TASK = """Write two narratives.
+
+1. BRAND POSITIONING (150-250 words): where the city stands relative to peers on the \
+democratic, participatory and innovative values, using the values scores, \
+institutional-quality and participation entries, and any benchmarks. Be explicit about \
+national proxies and self-assessments.
+
+2. BRAND IDENTITY (2-3 sentences): the city's distinct civic character as the evidence \
+supports it."""
+
 
 class BrandNarrator:
     def __init__(self) -> None:
-        self.api_key = ANTHROPIC_API_KEY
+        self.api_key = credential("ANTHROPIC_API_KEY")
 
-    def generate_narratives(self, pulse: CityBrandPulse, force_refresh: bool = False) -> Dict[str, BrandNarrative]:
-        now_iso = datetime.now(timezone.utc).isoformat()
-        city_name = pulse.city.name
-        air = pulse.live_telemetry.get("air_quality", {})
-        traffic = pulse.live_telemetry.get("traffic", {})
-        sentiment = pulse.live_telemetry.get("news_sentiment", {})
+    @property
+    def enabled(self) -> bool:
+        return bool(self.api_key)
 
-        image_narrative = (
-            f"Bremen breathes easily today under a Clean Air Index of {pulse.components['sustainability'].score}/100, "
-            f"with atmospheric conditions rated {air.get('label', 'Good')}. Along the Weser and through the historic Altstadt, "
-            f"city traffic flows at an unencumbered {traffic.get('speed', '38 km/h')}, lending the afternoon streets a relaxed, "
-            f"inviting rhythm. Flights touching down at Bremen Airport (BRE) from key European gateways bring an international pulse "
-            f"to the city's cafes and meeting rooms. Media sentiment tracks positively ({sentiment.get('tone', 'Tone: +1.2')}), "
-            f"reflecting a city comfortably harmonizing active cultural life with sustainable urban ease."
+    def _call(self, pulse: CityBrandPulse, ledger: Dict[str, dict], task: str, fields: List[str]) -> Optional[dict]:
+        import anthropic
+
+        client = anthropic.Anthropic(api_key=self.api_key)
+        response = client.beta.messages.create(
+            model=MODEL,
+            max_tokens=16000,
+            system=SYSTEM_PROMPT,
+            output_config={"effort": "medium", "format": {"type": "json_schema", "schema": _schema(fields)}},
+            # Re-run on a fallback model if a safety classifier declines.
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+            messages=[{"role": "user", "content": f"{_data_block(pulse, ledger)}\n\n{task}"}],
+        )
+        if response.stop_reason == "refusal":
+            logger.warning("Narrative request declined: %s", response.stop_details)
+            return None
+        text = next((b.text for b in response.content if b.type == "text"), None)
+        return json.loads(text) if text else None
+
+    @staticmethod
+    def _build(kind: str, title: str, pillar: BrandingPillar, item: dict, ledger: Dict[str, dict]) -> BrandNarrative:
+        cited = list(dict.fromkeys(item.get("cited_metrics", [])))
+        unknown = [c for c in cited if c not in ledger]
+        return BrandNarrative(
+            narrative_type=kind,
+            title=title,
+            pillar=pillar,
+            text=item["text"],
+            status="generated",
+            generated_at=utc_now_iso(),
+            cited_metrics=[c for c in cited if c in ledger],
+            uncited_claims_warning=[f"cited unknown evidence id: {c}" for c in unknown]
+            or ([] if cited else ["narrative cites no evidence"]),
         )
 
-        positioning_narrative = (
-            f"Scoring {pulse.pillars['city_positioning'].score}/100 in City Positioning, Bremen sets a distinctive benchmark "
-            f"among mid-sized European knowledge hubs. Where peer industrial centers grapple with digital transitions, Bremen leverages "
-            f"a 100% 5G urban footprint and city-state agility to accelerate research at DFKI and the ZARM aerospace cluster. "
-            f"Its proactive 2038 climate targets, coupled with international connectivity and a deep-tech ecosystem hosting over "
-            f"80 specialized ventures, position Bremen not merely as a regional capital, but as an agile powerhouse for next-generation "
-            f"aerospace, automated logistics, and conversational AI."
-        )
+    def brand_image(self, pulse: CityBrandPulse) -> Optional[BrandNarrative]:
+        ledger = evidence_ledger(pulse)
+        if not self.enabled or not ledger:
+            return None
+        result = self._call(pulse, ledger, IMAGE_TASK, ["brand_image"])
+        if not result:
+            return None
+        return self._build("brand_image", f"{pulse.city.name} today", BrandingPillar.IMAGE, result["brand_image"], ledger)
 
-        identity_narrative = (
-            f"Bremen is a Hanseatic pioneer where maritime tradition meets the outer reaches of aerospace technology. "
-            f"Defined by pragmatic community trust, accessible green infrastructure, and collaborative civic AI, it remains a "
-            f"city that innovates without sacrificing its grounded, livable scale."
-        )
-
+    def positioning_and_identity(self, pulse: CityBrandPulse) -> Dict[str, BrandNarrative]:
+        ledger = evidence_ledger(pulse)
+        if not self.enabled or not ledger:
+            return {}
+        result = self._call(pulse, ledger, POSITIONING_IDENTITY_TASK, ["brand_positioning", "brand_identity"])
+        if not result:
+            return {}
         return {
-            "brand_image": BrandNarrative(narrative_type="brand_image", title=f"{city_name} Today: Lived Experience & Daily Pulse", pillar=BrandingPillar.IMAGE, text=image_narrative, status="grounded real-time synthesis", generated_at=now_iso, grounding_signals=["OpenAQ Clean Air Index", "TomTom City Center Flow", "GDELT News Tone", "Breminale & Domshof Calendar"]),
-            "brand_positioning": BrandNarrative(narrative_type="brand_positioning", title=f"{city_name} in Global Perspective: Competitive Edge", pillar=BrandingPillar.POSITIONING, text=positioning_narrative, status="grounded real-time synthesis", generated_at=now_iso, grounding_signals=["DFKI AI Research", "ZARM / Airbus Aerospace Cluster", "100% 5G Mobile Footprint", "Climate 2038 Target"]),
-            "brand_identity": BrandNarrative(narrative_type="brand_identity", title=f"The Essence of {city_name}: Civic DNA", pillar=BrandingPillar.IDENTITY, text=identity_narrative, status="grounded real-time synthesis", generated_at=now_iso, grounding_signals=["Hanseatic Civic Trust", "IDA Conversational Citizen AI", "Regional Broadband Leadership"]),
+            "brand_positioning": self._build("brand_positioning", f"{pulse.city.name} among its peers",
+                                             BrandingPillar.POSITIONING, result["brand_positioning"], ledger),
+            "brand_identity": self._build("brand_identity", f"The civic character of {pulse.city.name}",
+                                          BrandingPillar.IDENTITY, result["brand_identity"], ledger),
         }
+
+
+def slow_evidence_fingerprint(pulse: CityBrandPulse) -> Dict[str, str]:
+    """Identifies the slow-moving evidence behind positioning/identity.
+
+    Curated assessments, published benchmarks and national-proxy annual
+    indicators change rarely; when none of them changed, the cached
+    positioning/identity narratives are still valid.
+    """
+    fingerprint = {}
+    for component in pulse.components.values():
+        for m in component.metrics:
+            if m.evidence_type != EvidenceType.MEASURED or m.geo_level == GeoLevel.NATIONAL_PROXY:
+                fingerprint[f"{component.component.value}.{m.name}"] = f"{m.display_name}|{m.raw_value}"
+    return dict(sorted(fingerprint.items()))

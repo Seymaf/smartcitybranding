@@ -1,0 +1,366 @@
+{
+  "_instructions": "Fill `value`, `year` and `citation` (report title + URL or page) from the published edition. Entries with any of these left null are ignored by the pipeline - never estimate. For rank scales also fill scale.total (number of ranked entities). Scores: enter the raw published score; min/max give the index's own range.",
+  "benchmarks": [
+    {
+      "id": "un_e_participation",
+      "name": "UN E-Government Survey / E-Participation Index",
+      "component": "smart_communication",
+      "link": "https://publicadministration.un.org/egovkb/en-us/Data-Center",
+      "geo_level": "national_proxy",
+      "cadence": "Biennial",
+      "values": [
+        "participatory",
+        "democratic"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 1
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Official digital-communication & e-participation ranking - validates the live score against a recognized index"
+    },
+    {
+      "id": "desi",
+      "name": "EU Digital Decade / DESI Indicators",
+      "component": "smart_communication",
+      "link": "https://digital-decade-desi.digital-strategy.ec.europa.eu/datasets/desi/indicators",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [
+        "innovative"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "EU digital public-services & connectivity sub-indices"
+    },
+    {
+      "id": "iese_cities_in_motion",
+      "name": "IESE Cities in Motion Index",
+      "component": "smart_communication",
+      "link": "https://www.iese.edu/stories/smart-sustainable-cities-in-motion-index/",
+      "geo_level": "city",
+      "cadence": "Annual",
+      "values": [
+        "innovative"
+      ],
+      "scale": {
+        "type": "rank",
+        "total": null
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "City-level smart/connectivity ranking across dimensions - best-fit city-granular benchmark"
+    },
+    {
+      "id": "itu_idi",
+      "name": "ITU ICT Development Index (IDI)",
+      "component": "smart_communication",
+      "link": "https://www.itu.int/en/ITU-D/Statistics/Pages/IDI/default.aspx",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "National ICT / communication infrastructure development score"
+    },
+    {
+      "id": "cpi",
+      "name": "Transparency International Corruption Perceptions Index (CPI)",
+      "component": "e_governance",
+      "link": "https://www.transparency.org/en/cpi/2025",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [
+        "democratic"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Perceived public-sector corruption, 180 countries"
+    },
+    {
+      "id": "wjp_rule_of_law",
+      "name": "World Justice Project Rule of Law Index",
+      "component": "e_governance",
+      "link": "https://worldjusticeproject.org/rule-of-law-index/",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [
+        "democratic"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 1
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Rule-of-law and institutional-trust ranking, 140+ countries"
+    },
+    {
+      "id": "un_egdi_online_service",
+      "name": "UN E-Government Development Index (EGDI) - Online Service Component",
+      "component": "e_governance",
+      "link": "https://publicadministration.un.org/egovkb/en-us/Data-Center",
+      "geo_level": "national_proxy",
+      "cadence": "Biennial",
+      "values": [
+        "participatory"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 1
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Digital public-service maturity - the sibling component to the E-Participation Index used in Smart Communication's benchmark track"
+    },
+    {
+      "id": "oecd_dgi",
+      "name": "OECD Digital Government Index (DGI)",
+      "component": "e_governance",
+      "link": "https://www.oecd.org/en/publications/digital-government-index-and-open-useful-and-re-usable-data-index_6347ec74-en.html",
+      "geo_level": "national_proxy",
+      "cadence": "Periodic (~2-3 year cycle)",
+      "values": [
+        "participatory"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 1
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Digital-government maturity ranking across OECD members"
+    },
+    {
+      "id": "gtmi",
+      "name": "World Bank GovTech Maturity Index (GTMI)",
+      "component": "e_governance",
+      "link": "https://www.worldbank.org/en/programs/govtech/gtmi-2025-update",
+      "geo_level": "national_proxy",
+      "cadence": "Periodic (2022, 2025 updates)",
+      "values": [
+        "innovative"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 1
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "GovTech / public-sector digital-transformation maturity, broad country coverage"
+    },
+    {
+      "id": "gfci",
+      "name": "Global Financial Centres Index (GFCI)",
+      "component": "stakeholders",
+      "link": "https://www.longfinance.net/programmes/financial-centre-futures/global-financial-centres-index/",
+      "geo_level": "city",
+      "cadence": "Semi-annual",
+      "values": [],
+      "scale": {
+        "type": "rank",
+        "total": null
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "City-level financial-centre competitiveness ranking, published twice a year"
+    },
+    {
+      "id": "startupblink",
+      "name": "StartupBlink Global Startup Ecosystem Index",
+      "component": "stakeholders",
+      "link": "https://lp.startupblink.com/report/",
+      "geo_level": "city",
+      "cadence": "Annual",
+      "values": [
+        "innovative"
+      ],
+      "scale": {
+        "type": "rank",
+        "total": null
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "City-level startup-ecosystem ranking across 100+ countries"
+    },
+    {
+      "id": "b_ready",
+      "name": "World Bank Business Ready (B-READY) Index",
+      "component": "stakeholders",
+      "link": "https://www.worldbank.org/en/businessready",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Business-environment and investment-climate ranking, successor to Doing Business"
+    },
+    {
+      "id": "gds_index",
+      "name": "Global Destination Sustainability Index (GDS-Index)",
+      "component": "tourism",
+      "link": "https://www.gds.earth/index/",
+      "geo_level": "city",
+      "cadence": "Annual",
+      "values": [],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "City-level destination-sustainability ranking, published annually"
+    },
+    {
+      "id": "tomtom_traffic_index",
+      "name": "TomTom Traffic Index",
+      "component": "digital_infrastructure",
+      "link": "https://www.tomtom.com/traffic-index/",
+      "geo_level": "city",
+      "cadence": "Annual",
+      "values": [],
+      "scale": {
+        "type": "rank",
+        "total": null
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Annual congestion ranking across cities",
+      "note": "Rank by congestion: rank 1 = most congested, so enter the inverted rank (total - rank + 1)."
+    },
+    {
+      "id": "imd_smart_city",
+      "name": "IMD Smart City Index",
+      "component": "digital_infrastructure",
+      "link": "https://www.imd.org/smart-city-observatory/home/rankings/",
+      "geo_level": "city",
+      "cadence": "Annual",
+      "values": [
+        "innovative"
+      ],
+      "scale": {
+        "type": "rank",
+        "total": null
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "City-level smart/digital infrastructure ranking - the same index the pitch deck names as a competitor benchmark"
+    },
+    {
+      "id": "network_readiness",
+      "name": "Network Readiness Index (NRI)",
+      "component": "digital_infrastructure",
+      "link": "https://networkreadinessindex.org/",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [
+        "innovative"
+      ],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Technology, people, governance and impact pillars of digital readiness"
+    },
+    {
+      "id": "gsma_mci",
+      "name": "GSMA Mobile Connectivity Index",
+      "component": "digital_infrastructure",
+      "link": "https://www.mobileconnectivityindex.com/",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Mobile-connectivity readiness score - headline rankings published free, underlying data licensed separately"
+    },
+    {
+      "id": "epi",
+      "name": "Yale/Columbia Environmental Performance Index (EPI)",
+      "component": "sustainability",
+      "link": "https://epi.yale.edu/",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Environmental performance ranking across climate, ecosystem and pollution categories"
+    },
+    {
+      "id": "nd_gain",
+      "name": "ND-GAIN Country Index",
+      "component": "sustainability",
+      "link": "https://gain.nd.edu/our-work/country-index/",
+      "geo_level": "national_proxy",
+      "cadence": "Annual",
+      "values": [],
+      "scale": {
+        "type": "score",
+        "min": 0,
+        "max": 100
+      },
+      "value": null,
+      "year": null,
+      "citation": null,
+      "what_it_captures": "Climate vulnerability and readiness ranking"
+    }
+  ]
+}

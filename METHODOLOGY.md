@@ -1,198 +1,143 @@
-# Methodology: Hybrid Data Architecture
+# Methodology
 
-This project models Bremen's smart city profile across six components.
-Sustainability is driven entirely by a live, free public API. Tourism
-blends two live APIs (traffic, flight arrivals) with one manually curated
-signal (local events) — no free API tracks "what's happening in Bremen
-today." The remaining four components have no equivalent free, per-city,
-real-time API at all — so they're maintained as periodically updated
-manual data instead. This document explains that split, the reasoning
-behind it component by component, and how to keep the manual data current.
+## Principles
 
-## Why hybrid, not all-API or all-manual
+1. **Measure before claiming.** Every score is built from metrics that were
+   actually obtained on this run, from a published index entered with its
+   citation, or from a clearly labelled curated assessment. Nothing is
+   estimated to fill a gap.
+2. **Show the evidence type.** Each metric is `measured` (live API),
+   `benchmark` (published index) or `curated` (hand assessment), and is
+   `city` level or a `national_proxy`. The report shows, per component, the
+   share of evidence that is live-measured.
+3. **Absence is information.** A component or value with no evidence is
+   `n/a` and raises an integrity flag. It is never averaged in as a default.
+4. **Self-assessment is checked against data.** When a curated assessment
+   exceeds the live evidence in the same component by more than 25 points,
+   the report says so (`CURATED_ABOVE_EVIDENCE`).
 
-An all-API approach isn't possible: no free service exposes a live,
-per-city "e-governance maturity" or "citizen engagement quality" score —
-these are qualitative, judgment-based assessments, not sensor readings. An
-all-manual approach would throw away real, freely available live data for
-air quality and traffic, which *do* have simple per-city REST APIs. The
-hybrid model uses live data where it genuinely exists and is easy to get,
-and transparent, dated manual data everywhere else — with a `last_updated`
-field (and a `note` field for provisional data) so the brand narratives are
-never presented as more current or more certain than they actually are.
+## Scoring
 
-## Real-time, API-driven components
+Every metric is normalized to 0–100.
 
-| Component | Module(s) | API | What it fetches |
+- **Component score** = weighted mean of its metrics. Weight = connector
+  weight (measured 1.0, benchmark 0.75, curated 0.5, provisional curated
+  0.25) × 0.5 for national proxies.
+- **Pillar score** = mean of the two components the source map assigns to
+  it (Identity: Smart Communication + Digital Infrastructure; Image:
+  E-Governance + Smart Tourism; Positioning: Stakeholders + Sustainability),
+  over the components that have a score.
+- **Vitality index** = mean of the pillar scores. Marked *not verifiable*
+  unless ≥50% of all evidence weight is live-measured and every pillar has
+  a score.
+- **Values lens** = weighted mean of the metrics tagged with that value
+  (democratic / participatory / innovative).
+
+### Normalization ranges
+
+`linear(a → b)` maps a to 0 and b to 100 (inverted when a > b);
+`log(a → b)` does the same on a log10 scale, for volumes that span orders
+of magnitude between small and large cities.
+
+| Metric | Source | Normalization | Value tag |
 | --- | --- | --- | --- |
-| Sustainability | [`air_quality.py`](air_quality.py) | [OpenWeatherMap Air Pollution API](https://openweathermap.org/api/air-pollution) (free tier) | AQI index + PM2.5, PM10, NO2, O3, SO2, CO concentrations |
-| Tourism | [`traffic.py`](traffic.py) + [`flight_arrivals.py`](flight_arrivals.py) | [TomTom Traffic Flow API](https://developer.tomtom.com/traffic-api/documentation/traffic-flow/flow-segment-data) (free tier) + [AviationStack Flights API](https://aviationstack.com/) (free tier) | Current vs. free-flow speed, congestion ratio, road closures; plus today's arrival count, origin countries/cities, and notable patterns (e.g. "5 arrivals from Turkey") |
+| News volume (7 days) | GDELT | log(10 → 5,000 articles) | |
+| News tone | GDELT | linear(-5 → +5) | |
+| Community discussion (week) | Reddit | log(5 → 100 posts) | |
+| Community reception | Reddit | linear(upvote ratio 0.5 → 1.0) | |
+| Service requests (30 days) | Open311 | log(10 → 10,000) | participatory |
+| Requests resolved | Open311 | share closed × 100 | participatory |
+| Median days to resolve | Open311 | linear(30 → 1 days) | |
+| Voice & accountability | World Bank WGI | linear(-2.5 → +2.5), national proxy | democratic, participatory |
+| Rule of law / Control of corruption | World Bank WGI | linear(-2.5 → +2.5), national proxy | democratic |
+| Government effectiveness | World Bank WGI | linear(-2.5 → +2.5), national proxy | |
+| Open datasets | CKAN portal | log(10 → 10,000) | participatory |
+| Datasets updated in last year | CKAN portal | share × 100 | participatory |
+| Datasets on data.europa.eu | data.europa.eu | log(10 → 20,000) | participatory |
+| Participatory processes / participants / proposals | Decidim | log(1 → 100) / log(100 → 100k) / log(10 → 20k) | participatory, democratic |
+| Open job ads | Adzuna | log(500 → 100,000) | |
+| Share of IT job ads | Adzuna | linear(2% → 15%) | innovative |
+| FDI net inflows | World Bank | linear(-1% → 5% of GDP), national proxy | |
+| Arrivals today / distinct origins | AviationStack | log(5 → 500) / linear(1 → 20) | |
+| Arrivals yesterday / departure airports | OpenSky | log(5 → 1,000) / linear(1 → 60) | |
+| Wikipedia views (30-day daily avg) | Wikimedia | log(100 → 50,000) | |
+| Attraction rating / review volume | Google Places | linear(3.0 → 5.0) / log(1k → 1M) | |
+| City-centre traffic fluidity | TomTom | (1 − congestion) × 100 | |
+| Data-centre facilities / IXPs | PeeringDB | log(1 → 50) / linear(0 → 3) | innovative |
+| Mobile cells in central 4 km² | OpenCelliD | log(10 → 2,000) | |
+| AQI (1–5) / PM2.5 | OpenWeatherMap | linear(5 → 1) / linear(50 → 5 µg/m³) | |
+| PM2.5 / NO2 (sensor average) | OpenAQ | linear(50 → 5) / linear(100 → 10 µg/m³) | |
+| AQI (US scale) | AQICN | linear(200 → 0) | |
+| Curated assessments | manual_data.json | rating × 10 | per section |
+| Published indices | benchmarks.json | index's own range, or linear(rank total → 1) | per index |
 
-Both underlying APIs are simple, free, city-coordinate-keyed REST
-endpoints — exactly the shape this pipeline needs — so they're queried
-fresh on every `main.py` run. No manual step is needed or possible here;
-the data is only ever as current as the last API response.
+5 µg/m³ PM2.5 and 10 µg/m³ NO2 are the WHO 2021 annual guidelines. These
+ranges are deliberate, documented choices; change them in the connector
+modules and update this table together.
 
-**Tourism is one component with three data sources, not three
-components.** `traffic.py`, `flight_arrivals.py`, and `local_events.py`
-are separate modules purely for code organization (different sources,
-different response shapes). `main.py` combines their output into a single
-`tourism` dict (`{"traffic": ..., "flight_arrivals": ..., "local_events":
-...}`) before passing it to `brand_engine.py`, which formats it as one
-"Tourism component" section — consistent with the six-component framework
-(sustainability, tourism, digital infrastructure, e-governance, smart
-communication, stakeholders).
+## Source map coverage
 
-**Flight arrivals is optional within tourism.** `fetch_flight_arrivals()`
-never raises — if the API key is missing, the request fails, or the free
-tier's rate limit is hit, it returns `{"available": False, "error": "..."}`
-instead, and the tourism section is formatted without that subsection, no
-mention of the outage. Two free-tier constraints shape the implementation:
+**Implemented as live connectors (19):** GDELT, Reddit, Open311, World
+Bank WGI, CKAN, data.europa.eu, Decidim, Adzuna, World Bank FDI (Data360),
+AviationStack, OpenSky, Wikimedia Pageviews, Google Places, TomTom Traffic
+API, PeeringDB, OpenCelliD, OpenAQ, AQICN, plus OpenWeatherMap (kept from
+the original pipeline).
 
-- AviationStack's free plan is HTTP-only (HTTPS requires a paid plan), so
-  the API key travels in the query string unencrypted. That's a limitation
-  of AviationStack's tiering, not a choice made here.
-- The real-time flights endpoint doesn't return a country per flight, only
-  the departure airport's IATA code/name. A live per-flight country lookup
-  would require a second API call per unique departure airport against
-  AviationStack's separate Airports endpoint — impractical given the free
-  tier's small monthly request quota. Instead, `flight_arrivals.py` maps a
-  best-effort static table of common IATA codes (Bremen's typical
-  European/leisure route network) to country names, falling back to the
-  airport's own name for anything not in that table.
+**Published indices → `benchmarks.json` (19 entries, filled by hand with
+citations):** UN E-Participation Index, UN EGDI Online Service Component,
+EU DESI, IESE Cities in Motion, ITU IDI, Transparency International CPI, WJP
+Rule of Law Index, OECD DGI, World Bank GTMI, GFCI, StartupBlink, World Bank
+B-READY, GDS-Index, TomTom Traffic Index, IMD Smart City Index, Network
+Readiness Index, GSMA Mobile Connectivity Index, Yale EPI, ND-GAIN.
 
-**Local events is the third tourism source, manually maintained.** See
-"Local Events" below — it lives in `manual_data.json` alongside the four
-standalone manual components, but conceptually feeds tourism rather than
-being its own top-level component.
+**Not implemented, and why:**
 
-## Manually maintained data (periodic input)
+| Source | Reason |
+| --- | --- |
+| Brandwatch, Data365, Citibot, Granicus GXA, Vodafone Analytics, Telefónica Smart Steps, OpenGov PSP, fDi Markets, FlightAware, STR/Datarade, GSMA Intelligence, Euromonitor | Marked *PAID – reference only* in the source map |
+| Botpress, WhatsApp Business Cloud API | Need a partnership with the city (its own logs / account) |
+| Consul | Self-hosted; add alongside Decidim once a target city runs an instance |
+| X (Twitter) free tier | Flagged in the source map as too thin for monitoring |
+| APITube | Freemium news API; its response format couldn't be verified while building this, so it wasn't wired in blind |
+| api.data.gov, SEC EDGAR | US-only; add for US cities |
+| OpenCorporates | Requires an approved API account |
+| Eurostat business demography | Needs the dataset code and JSON-stat parsing for the city's NUTS region; next candidate |
+| Finnhub | National macro data; little city signal beyond the World Bank indicators |
+| Hotel APIs | Availability/pricing aggregators; no stable free tier to verify against |
+| Ookla open data, M-Lab | Bulk datasets (Parquet on S3, BigQuery), not request/response APIs; need an offline ingestion job |
+| Google EIE, Climate TRACE, CDP Cities | Periodic datasets; to be added as benchmark-style entries or an ingestion job |
+| UNWTO dashboard, WTTC cities report | Published reports without a comparable score; can be added to `benchmarks.json` |
 
-Five sections read from [`manual_data.json`](manual_data.json) via a
-shared loader (`config.load_manual_data`): four standalone components
-(e-governance, digital infrastructure, stakeholders, smart communication)
-plus local events, which feeds into the tourism component alongside
-traffic and flight arrivals. Each was evaluated for a free real-time API
-first; none exists, for the reasons below.
+## Maintaining curated data
 
-### E-Governance (`e_governance.py`)
+`manual_data.json` holds 0–10 assessments for digital infrastructure,
+e-governance, smart communication, stakeholders and local events (which
+feeds Smart Tourism). They weigh half as much as a live measurement and
+are always shown as assessments.
 
-- **Why manual:** No API measures "digital government maturity" for a
-  single city. Assessing it means reading government portals, program
-  announcements, and rollout press releases — inherently a judgment call,
-  not a live metric a sensor or endpoint could report.
-- **Recommended update frequency:** Quarterly, or immediately after a
-  major service launch (a new online permit category, a new digital ID
-  integration, etc.).
-- **Data sources to consult:**
-  - Bremen's official digital services portal (serviceStadt Bremen /
-    bremen.de)
-  - "e-Government – Made in Bremen" network announcements
-  - Innovationscampus für Verwaltungsdigitalisierung updates
-  - National eGovernment benchmarks (e.g. Initiative D21's eGovernment
-    Monitor) for comparative context when scoring
+1. Update the section's score field only with a concrete, citable fact.
+2. Keep `key_facts` specific; Claude receives them labelled as curated.
+3. Set `last_updated` (`YYYY-MM-DD`).
+4. Add a `note` when a value is an estimate; this halves its weight again.
 
-### Digital Infrastructure (`digital_infrastructure.py`)
+Suggested cadence and where to look:
 
-- **Why manual:** Live, per-city internet speed/connectivity data (e.g.
-  Ookla) is either paid (Speedtest Intelligence API) or available only as a
-  bulk historical dataset, not a queryable live endpoint. Rollout of fiber
-  and 5G coverage also moves on a timescale of months, so live polling
-  wouldn't add value even if it existed.
-- **Recommended update frequency:** Semi-annually, or immediately after a
-  significant rollout milestone (new fiber/5G coverage announcement).
-- **Data sources to consult:**
-  - Bundesnetzagentur Breitbandatlas (federal broadband atlas)
-  - Bremen's Regional Broadband Center (regionaler Breitbandkoordinator)
-    reports
-  - Telecom provider coverage maps (Deutsche Telekom, Vodafone,
-    Telefónica/O2) for 5G and fiber footprint
-  - Bremen Senate digital infrastructure press releases
+- **E-Governance:** quarterly. serviceStadt Bremen / bremen.de, the
+  *e-Government – Made in Bremen* network, Innovationscampus für
+  Verwaltungsdigitalisierung, Initiative D21 eGovernment Monitor.
+- **Digital infrastructure:** semi-annually. Bundesnetzagentur
+  Breitbandatlas, Bremen's regional broadband coordinator, operator
+  coverage maps.
+- **Stakeholders:** quarterly. WFB Bremen, Senate press releases,
+  University of Bremen / Constructor University, bremenports.
+- **Smart communication:** quarterly. The city's official channels,
+  app-store reviews, the press office.
+- **Local events:** monthly, and before festival season (Breminale,
+  Musikfest Bremen, Open Space Domshof).
 
-### Stakeholders (`stakeholders.py`)
+## Maintaining benchmarks
 
-- **Why manual:** Stakeholder ecosystem health — public-private
-  partnerships, cross-department initiatives, academic collaborations — is
-  a relational, qualitative assessment. No API tracks partnership strength.
-- **Recommended update frequency:** Quarterly, or after a major
-  partnership announcement (new MOU, initiative launch, funding award).
-- **Data sources to consult:**
-  - WFB Bremen (Wirtschaftsförderung Bremen) news and initiative pages
-  - Bremen Senate press releases (Senatspressestelle)
-  - University of Bremen / Jacobs University partnership announcements
-  - bremenports Smart Port strategy updates
-  - Governikus product and partnership announcements
-
-### Smart Communication (`smart_communication.py`)
-
-- **Why manual:** No API aggregates "citizen engagement quality" across a
-  city's official communication channels. Assessing it requires an actual
-  audit of social media activity, response rates, and app usage.
-- **Current status:** ✅ **Verified.** `manual_data.json` now reflects a
-  real audit of Bremen's official channels (tourism Instagram following and
-  post cadence, WFB Bremen's dedicated tech channel, the discontinued city
-  X/Twitter account) rather than the earlier placeholder estimate.
-- **Recommended update frequency:** Quarterly — social platform strategy
-  and follower/engagement figures shift slowly enough that a monthly check
-  isn't necessary once a verified baseline is in place.
-- **Data sources to consult:**
-  - Official Bremen city social media accounts — posting frequency,
-    engagement rates
-  - Bremen city app / BSAG transit app store reviews and usage stats
-  - City of Bremen press/communications office reports
-  - Citizen e-participation platforms, if one exists for Bremen
-
-### Local Events (`local_events.py`) — feeds tourism, not standalone
-
-- **Why manual:** No free API tracks "what festivals/events are running
-  in Bremen right now" at the granularity this needs. Event calendars
-  exist per-venue or per-organizer, not aggregated city-wide, and change
-  on a seasonal rather than real-time basis.
-- **Recommended update frequency:** Monthly, or immediately before major
-  festival season (Breminale in July, Musikfest Bremen, and the
-  mid-June-to-mid-September Open Space Domshof run) so the data reflects
-  what's actually happening rather than a stale prior season.
-- **Data sources to consult:**
-  - Official Bremen tourism event calendar (bremen.de / visit.bremen)
-  - Individual festival sites (Breminale, Musikfest Bremen, Open Space
-    Domshof)
-  - City of Bremen press/communications office event announcements
-
-## How to update `manual_data.json`
-
-1. Open `manual_data.json` and find the relevant top-level section
-   (`e_governance`, `digital_infrastructure`, `stakeholders`,
-   `smart_communication`, or `local_events`).
-2. Update that section's score field. Each section uses its own field
-   name (`digital_service_score`, `connectivity_score`,
-   `partnership_score`, `engagement_score`, `activity_score`) on a
-   **0–10 scale**. Only raise a score when you have a concrete fact to
-   back it up — don't inflate scores speculatively.
-3. Update `key_facts` — a short list of concrete, citable facts (not
-   vague claims). These are what Claude quotes from directly in the brand
-   narratives, so specificity matters more than length.
-4. Set `last_updated` to today's date in `YYYY-MM-DD` format.
-5. If a value is an estimate rather than a verified fact, add a `note`
-   field explaining that (see `smart_communication` for the pattern).
-   `brand_engine.py` is prompted to treat noted components with
-   appropriately less certainty than verified ones.
-6. Save the file. No code changes are required — every module reads
-   `manual_data.json` fresh at runtime, so the next `python main.py` run
-   picks up the update automatically.
-
-## Daily archive → future weekly/monthly reports
-
-Every `main.py` run writes `archive/<YYYY-MM-DD>.json` (see
-[`archive.py`](archive.py)): the day's raw values from all eight fetchers
-plus the three narratives with their cached/fresh status. Multiple runs on
-the same day overwrite that day's file — the archive is a dated history
-(one snapshot per day), not a per-run audit log.
-
-This is the intended data source for future weekly/monthly report
-generation: a report script can glob `archive/*.json`, read across a date
-range, and track things like how `manual_data.json` scores moved over a
-month, how often `brand_positioning` needed regenerating vs. served from
-cache, or how sustainability/tourism signals trended week over week. Because
-the archive is git-tracked (see README's "Daily archive" section for the
-sensitivity reasoning), that history is available to whoever clones the
-repo, not just whoever ran the pipeline locally.
+For each entry in `benchmarks.json`, take the value from the latest official
+edition and fill `value`, `year` and `citation` (report title plus URL or
+page). For rankings, also set `scale.total`. Entries with anything missing
+are ignored by the pipeline.

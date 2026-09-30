@@ -1,82 +1,215 @@
-"""Composite brand scoring and normalization engine."""
+"""Evidence-weighted scoring, the civic-values lens, and the integrity report.
+
+Rules (documented in METHODOLOGY.md):
+- A component is scored only from metrics that were actually obtained.
+  No evidence -> no score (None), never a default number.
+- Effective weight = metric weight x 0.5 if it is a national proxy.
+  Curated metrics carry weight 0.5 and benchmarks 0.75 from their connectors,
+  so live measurements dominate.
+- Pillars follow the source map: each branding pillar averages the two smart
+  city components mapped to it. The vitality index averages the pillars.
+- The integrity report makes the greenwashing checks explicit.
+"""
 from __future__ import annotations
-from datetime import datetime, timezone
-from typing import Any, Dict, List
-from core.models import BrandingPillar, CityBrandPulse, CityContext, ComponentScore, NormalizedMetric, PillarScore, RawObservation, SmartCityComponent
+
+from typing import Dict, Iterable, List, Optional, Tuple
+
+from core.models import (
+    BrandingPillar,
+    CityBrandPulse,
+    CityContext,
+    ComponentScore,
+    EvidenceType,
+    GeoLevel,
+    IntegrityFlag,
+    NormalizedMetric,
+    PillarScore,
+    SmartCityComponent,
+    SourceReport,
+    SourceStatus,
+    ValueDimension,
+    ValueScore,
+    utc_now_iso,
+)
+
+NATIONAL_PROXY_FACTOR = 0.5
+CURATED_GAP_THRESHOLD = 25.0  # points a self-assessment may exceed the evidence
+AIR_QUALITY_CONCERN = 50.0
+# The headline vitality index is only called verifiable when at least half of
+# the evidence weight is live-measured and every pillar has a score.
+MIN_HEADLINE_MEASURED_SHARE = 0.5
+
+COMPONENT_INFO: Dict[SmartCityComponent, Tuple[str, BrandingPillar]] = {
+    SmartCityComponent.SMART_COMMUNICATION: ("Smart Communication", BrandingPillar.IDENTITY),
+    SmartCityComponent.DIGITAL_INFRASTRUCTURE: ("Digital Infrastructure", BrandingPillar.IDENTITY),
+    SmartCityComponent.E_GOVERNANCE: ("E-Governance", BrandingPillar.IMAGE),
+    SmartCityComponent.TOURISM: ("Smart Tourism", BrandingPillar.IMAGE),
+    SmartCityComponent.STAKEHOLDERS: ("Stakeholders", BrandingPillar.POSITIONING),
+    SmartCityComponent.SUSTAINABILITY: ("Sustainability", BrandingPillar.POSITIONING),
+}
+
+PILLAR_NAMES = {
+    BrandingPillar.IDENTITY: "City Identity",
+    BrandingPillar.IMAGE: "City Image",
+    BrandingPillar.POSITIONING: "City Positioning",
+}
+
+CURATED_SECTION_FOR = {
+    SmartCityComponent.DIGITAL_INFRASTRUCTURE: "digital_infrastructure",
+    SmartCityComponent.E_GOVERNANCE: "e_governance",
+    SmartCityComponent.SMART_COMMUNICATION: "smart_communication",
+    SmartCityComponent.STAKEHOLDERS: "stakeholders",
+    SmartCityComponent.TOURISM: "local_events",
+}
+
+
+def effective_weight(metric: NormalizedMetric) -> float:
+    factor = NATIONAL_PROXY_FACTOR if metric.geo_level == GeoLevel.NATIONAL_PROXY else 1.0
+    return metric.weight * factor
+
+
+def weighted_mean(metrics: Iterable[NormalizedMetric]) -> Optional[float]:
+    pairs = [(effective_weight(m), m.score) for m in metrics]
+    total = sum(w for w, _ in pairs)
+    if total <= 0:
+        return None
+    return round(sum(w * s for w, s in pairs) / total, 1)
+
+
+def _mean(values: Iterable[Optional[float]]) -> Optional[float]:
+    present = [v for v in values if v is not None]
+    return round(sum(present) / len(present), 1) if present else None
+
 
 class BrandScoringEngine:
-    def compute_pulse(self, city: CityContext, observations: Dict[str, RawObservation], normalized_metrics: Dict[str, List[NormalizedMetric]], curated_data: Dict[str, Any]) -> CityBrandPulse:
-        now_iso = datetime.now(timezone.utc).isoformat()
-        
-        # 1. Sustainability
-        air_m = normalized_metrics.get("openaq_air_pollution", [])
-        clean_air = next((m for m in air_m if m.name == "clean_air_score"), None)
-        sust_score = clean_air.score if clean_air else 84.0
-        sust_comp = ComponentScore(component=SmartCityComponent.SUSTAINABILITY, display_name="Sustainability & Clean Environment", score=round(sust_score, 1), primary_pillar=BrandingPillar.POSITIONING, metrics=air_m, key_facts=["Air Quality Index: Good", "Municipal climate neutrality target set for 2038"], sources_used=["OpenAQ API", "OpenWeatherMap API"])
+    def compute_pulse(
+        self,
+        city: CityContext,
+        metrics: List[NormalizedMetric],
+        sources: List[SourceReport],
+        curated_data: Dict,
+    ) -> CityBrandPulse:
+        components = self._components(metrics, curated_data)
+        pillars = self._pillars(components)
+        values = self._values(metrics)
+        ok_sources = sum(1 for s in sources if s.status == SourceStatus.OK)
+        total_weight = sum(effective_weight(m) for m in metrics)
+        measured_weight = sum(effective_weight(m) for m in metrics if m.evidence_type == EvidenceType.MEASURED)
+        measured_share = round(measured_weight / total_weight, 3) if total_weight else 0.0
+        verifiable = measured_share >= MIN_HEADLINE_MEASURED_SHARE and all(p.score is not None for p in pillars.values())
+        flags = self._integrity(components, values, sources)
+        if not verifiable:
+            flags.insert(0, IntegrityFlag(
+                "critical", "HEADLINE_NOT_VERIFIABLE",
+                f"Only {measured_share:.0%} of the evidence is live-measured (minimum {MIN_HEADLINE_MEASURED_SHARE:.0%}) "
+                "or a pillar has no evidence — do not publish the vitality index as a verified score."))
+        return CityBrandPulse(
+            city=city,
+            timestamp=utc_now_iso(),
+            vitality_index=_mean(p.score for p in pillars.values()),
+            evidence_coverage=round(ok_sources / len(sources), 3) if sources else 0.0,
+            measured_share=measured_share,
+            headline_verifiable=verifiable,
+            pillars={p.value: score for p, score in pillars.items()},
+            components={c.value: score for c, score in components.items()},
+            values={d.value: score for d, score in values.items()},
+            integrity_flags=flags,
+            sources=sources,
+        )
 
-        # 2. Tourism
-        traf_m = normalized_metrics.get("tomtom_traffic_flow", [])
-        flight_m = normalized_metrics.get("aviation_opensky_flights", [])
-        wiki_m = normalized_metrics.get("wikimedia_pageviews_api", [])
-        events = curated_data.get("local_events", {})
-        ev_score = float(events.get("activity_score", 8.0)) * 10.0
-        fluidity = next((m.score for m in traf_m if m.name == "mobility_fluidity"), 75.0)
-        flights = next((m.score for m in flight_m if m.name == "air_connectivity"), 70.0)
-        curiosity = next((m.score for m in wiki_m if m.name == "digital_curiosity_index"), 72.0)
-        tour_score = (0.35 * ev_score) + (0.25 * fluidity) + (0.20 * flights) + (0.20 * curiosity)
-        tour_comp = ComponentScore(component=SmartCityComponent.TOURISM, display_name="Smart Tourism, Mobility & Culture", score=round(tour_score, 1), primary_pillar=BrandingPillar.IMAGE, metrics=traf_m + flight_m + wiki_m, key_facts=events.get("key_facts", ["Breminale open-air cultural festival on the Weser riverside", "Musikfest Bremen draws classical audiences city-wide"]), sources_used=["TomTom Traffic Flow API", "OpenSky Network API", "Wikimedia Pageviews API"])
+    # ---- aggregation -------------------------------------------------------
 
-        # 3. Digital Infrastructure
-        infra = curated_data.get("digital_infrastructure", {})
-        infra_score = float(infra.get("connectivity_score", 9.0)) * 10.0
-        infra_comp = ComponentScore(component=SmartCityComponent.DIGITAL_INFRASTRUCTURE, display_name="Digital Infrastructure & Connectivity", score=round(infra_score, 1), primary_pillar=BrandingPillar.IDENTITY, key_facts=infra.get("key_facts", ["100% 5G mobile network coverage across urban boundaries", "Regional Broadband Center actively expanding fiber footprint"]), sources_used=["Broadband Atlas", "Municipal Records"])
+    def _components(self, metrics: List[NormalizedMetric], curated: Dict) -> Dict[SmartCityComponent, ComponentScore]:
+        result = {}
+        for component, (display, pillar) in COMPONENT_INFO.items():
+            own = [m for m in metrics if m.component == component]
+            total = sum(effective_weight(m) for m in own)
+            measured = sum(effective_weight(m) for m in own if m.evidence_type == EvidenceType.MEASURED)
+            section = curated.get(CURATED_SECTION_FOR.get(component, ""), {}) if curated else {}
+            result[component] = ComponentScore(
+                component=component,
+                display_name=display,
+                score=weighted_mean(own),
+                primary_pillar=pillar,
+                metrics=own,
+                measured_share=round(measured / total, 3) if total else 0.0,
+                key_facts=list(section.get("key_facts", [])),
+            )
+        return result
 
-        # 4. E-Governance
-        egov = curated_data.get("e_governance", {})
-        egov_score = float(egov.get("digital_service_score", 7.0)) * 10.0
-        egov_comp = ComponentScore(component=SmartCityComponent.E_GOVERNANCE, display_name="E-Governance & Digital Public Services", score=round(egov_score, 1), primary_pillar=BrandingPillar.IMAGE, key_facts=egov.get("key_facts", ["serviceStadt Bremen online portal for resident registration and permits", "Innovationscampus für Verwaltungsdigitalisierung active"]), sources_used=["Bremen Open Data Portal", "Municipal Records"])
+    def _pillars(self, components: Dict[SmartCityComponent, ComponentScore]) -> Dict[BrandingPillar, PillarScore]:
+        result = {}
+        for pillar, display in PILLAR_NAMES.items():
+            members = [c for c in components.values() if c.primary_pillar == pillar]
+            result[pillar] = PillarScore(
+                pillar=pillar,
+                display_name=display,
+                score=_mean(c.score for c in members),
+                contributing_components=[c.component.value for c in members if c.score is not None],
+            )
+        return result
 
-        # 5. Smart Communication
-        comm = curated_data.get("smart_communication", {})
-        comm_base = float(comm.get("engagement_score", 8.0)) * 10.0
-        gdelt_m = normalized_metrics.get("gdelt_doc_api", [])
-        sent_score = next((m.score for m in gdelt_m if m.name == "global_sentiment_tone"), 65.0)
-        comm_score = (0.7 * comm_base) + (0.3 * sent_score)
-        comm_comp = ComponentScore(component=SmartCityComponent.SMART_COMMUNICATION, display_name="Smart Communication & Citizen Engagement", score=round(comm_score, 1), primary_pillar=BrandingPillar.IDENTITY, metrics=gdelt_m, key_facts=comm.get("key_facts", ["IDA conversational AI chatbot providing 24/7 resident citizen inquiries", "BOTS BREMEN grassroots tech & conversational AI ecosystem"]), sources_used=["GDELT 2.0 DOC API", "Municipal Records"])
+    def _values(self, metrics: List[NormalizedMetric]) -> Dict[ValueDimension, ValueScore]:
+        result = {}
+        for dimension in ValueDimension:
+            tagged = [m for m in metrics if dimension in m.values]
+            result[dimension] = ValueScore(
+                dimension=dimension,
+                score=weighted_mean(tagged),
+                metrics=[f"{m.component.value}.{m.name}" for m in tagged],
+            )
+        return result
 
-        # 6. Stakeholders
-        stake = curated_data.get("stakeholders", {})
-        stake_score = float(stake.get("partnership_score", 9.0)) * 10.0
-        stake_comp = ComponentScore(component=SmartCityComponent.STAKEHOLDERS, display_name="Stakeholder Ecosystem & Innovation", score=round(stake_score, 1), primary_pillar=BrandingPillar.POSITIONING, key_facts=stake.get("key_facts", ["DFKI German Research Center for AI located on university campus", "ZARM space technology and aerospace cluster with Airbus & OHB"]), sources_used=["WFB Wirtschaftsförderung Bremen", "Municipal Records"])
+    # ---- integrity / greenwashing checks ----------------------------------
 
-        components = {
-            "sustainability": sust_comp,
-            "tourism": tour_comp,
-            "digital_infrastructure": infra_comp,
-            "e_governance": egov_comp,
-            "smart_communication": comm_comp,
-            "stakeholders": stake_comp,
-        }
+    def _integrity(
+        self,
+        components: Dict[SmartCityComponent, ComponentScore],
+        values: Dict[ValueDimension, ValueScore],
+        sources: List[SourceReport],
+    ) -> List[IntegrityFlag]:
+        flags: List[IntegrityFlag] = []
+        for component, score in components.items():
+            name = score.display_name
+            if score.score is None:
+                severity = "critical" if component == SmartCityComponent.SUSTAINABILITY else "warning"
+                flags.append(IntegrityFlag(severity, "NO_EVIDENCE",
+                                           f"{name}: no data from any source — not scored, and no claims should be made about it.",
+                                           component.value))
+                continue
+            if score.measured_share == 0:
+                flags.append(IntegrityFlag(
+                    "critical" if component == SmartCityComponent.SUSTAINABILITY else "warning",
+                    "SELF_REPORTED_ONLY",
+                    f"{name}: scored only from curated assessments or published indices, with no live measurement to verify them.",
+                    component.value))
+            curated = [m for m in score.metrics if m.evidence_type == EvidenceType.CURATED]
+            measured = [m for m in score.metrics if m.evidence_type == EvidenceType.MEASURED]
+            if curated and measured:
+                gap = (weighted_mean(curated) or 0) - (weighted_mean(measured) or 0)
+                if gap > CURATED_GAP_THRESHOLD:
+                    flags.append(IntegrityFlag("warning", "CURATED_ABOVE_EVIDENCE",
+                                               f"{name}: the self-assessment is {gap:.0f} points above what live data shows.",
+                                               component.value))
 
-        # Pillars
-        id_score = 0.45 * infra_comp.score + 0.35 * comm_comp.score + 0.20 * egov_comp.score
-        im_score = 0.45 * tour_comp.score + 0.35 * comm_comp.score + 0.20 * sust_comp.score
-        pos_score = 0.45 * stake_comp.score + 0.30 * sust_comp.score + 0.25 * infra_comp.score
+        sustainability = components[SmartCityComponent.SUSTAINABILITY]
+        air = [m for m in sustainability.metrics if m.evidence_type == EvidenceType.MEASURED]
+        air_score = weighted_mean(air)
+        if air_score is not None and air_score < AIR_QUALITY_CONCERN:
+            flags.append(IntegrityFlag("warning", "SUSTAINABILITY_GAP",
+                                       f"Measured air quality scores {air_score}/100 — green or clean-air claims would not be supported today.",
+                                       SmartCityComponent.SUSTAINABILITY.value))
 
-        pillars = {
-            "city_identity": PillarScore(pillar=BrandingPillar.IDENTITY, display_name="City Identity", score=round(id_score, 1), tagline="Infrastructural DNA, connected citizens, and technological sovereignty", top_drivers=["Nation-leading 5G and fiber connectivity footprint", "Active conversational AI and citizen chatbot infrastructure (IDA)"]),
-            "city_image": PillarScore(pillar=BrandingPillar.IMAGE, display_name="City Image", score=round(im_score, 1), tagline="Lived daily experience, cultural vibrance, and global public perception", top_drivers=["High cultural activity score anchored by riverside festivals (Breminale)", "Pristine environmental air readings and fluid traffic velocity"]),
-            "city_positioning": PillarScore(pillar=BrandingPillar.POSITIONING, display_name="City Positioning", score=round(pos_score, 1), tagline="Comparative competitive advantage across aerospace, AI, and sustainability", top_drivers=["Aerospace innovation hub (Airbus, OHB, ZARM) paired with DFKI AI research", "Ambitious climate targets backed by high clean air index"]),
-        }
+        for dimension, value in values.items():
+            if value.score is None:
+                flags.append(IntegrityFlag("warning", "VALUE_UNEVIDENCED",
+                                           f"No evidence for the '{dimension.value}' value dimension — do not claim it."))
 
-        vitality = round((id_score + im_score + pos_score) / 3.0, 1)
-
-        telemetry = {
-            "air_quality": {"label": clean_air.status_label if clean_air else "Good", "clean_air_score": clean_air.score if clean_air else 84.0},
-            "traffic": {"speed": next((m.raw_value for m in traf_m if m.name == "mobility_fluidity"), "38 km/h"), "status": next((m.status_label for m in traf_m if m.name == "mobility_fluidity"), "Fluid")},
-            "flight_arrivals": {"summary": next((m.raw_value for m in flight_m if m.name == "air_connectivity"), "24 arrivals"), "status": next((m.status_label for m in flight_m if m.name == "air_connectivity"), "European routes")},
-            "news_sentiment": {"tone": next((m.raw_value for m in gdelt_m if m.name == "global_sentiment_tone"), "Tone: +1.2"), "status": next((m.status_label for m in gdelt_m if m.name == "global_sentiment_tone"), "Constructive")},
-            "digital_interest": {"pageviews": next((m.raw_value for m in wiki_m if m.name == "digital_curiosity_index"), "1,840 views/day"), "trend": next((m.status_label for m in wiki_m if m.name == "digital_curiosity_index"), "Rising")},
-        }
-
-        return CityBrandPulse(city=city, timestamp=now_iso, vitality_index=vitality, pillars=pillars, components=components, narratives={}, live_telemetry=telemetry, source_status={k: {"available": o.available} for k, o in observations.items()})
+        not_configured = [s.source_id for s in sources if s.status == SourceStatus.NOT_CONFIGURED]
+        failed = [s.source_id for s in sources if s.status == SourceStatus.ERROR]
+        if failed:
+            flags.append(IntegrityFlag("info", "SOURCES_FAILED", f"Sources that failed this run: {', '.join(failed)}."))
+        if not_configured:
+            flags.append(IntegrityFlag("info", "SOURCES_NOT_CONFIGURED",
+                                       f"Sources not configured (missing key or city endpoint): {', '.join(not_configured)}."))
+        return flags
