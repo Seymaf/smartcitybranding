@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Methodology & Team — Smart City Branding (SCB)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .navy-gradient { background: linear-gradient(135deg, #0b1329 0%, #111c44 50%, #0f172a 100%); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- Universal Navigation Bar (Identical Across All Pages) -->
+  <header class="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo & Identity -->
+      <a href="index.html" class="flex items-center gap-3.5 group">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-extrabold text-white text-lg tracking-wider shadow-md shadow-slate-900/10 border border-slate-800 transition-transform group-hover:scale-105">
+          <span class="text-amber-400">S</span>CB
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors">Smart City Branding</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">Audit & Index</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block">Institutional Verification & Civic Accountability SaaS</p>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="index.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Platform & PoC</a>
+        <a href="about.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Methodology & Team</a>
+        <a href="pricing.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Commercial Tiers</a>
+        <a href="contact.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Institutional Pilot</a>
+      </nav>
+
+      <!-- Action Button & Mobile Toggle -->
+      <div class="flex items-center gap-3">
+        <a href="contact.html" class="inline-flex items-center justify-center text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm hover:shadow active:scale-95 border border-slate-800">
+          Request Audit Pilot
+        </a>
+        <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" aria-label="Toggle Navigation Menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
+      <a href="index.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Platform & PoC</a>
+      <a href="about.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Methodology & Team</a>
+      <a href="pricing.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Commercial Tiers</a>
+      <a href="contact.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2">Institutional Pilot</a>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    
+    <!-- Hero Banner -->
+    <section class="navy-gradient text-white py-16 lg:py-24 border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl space-y-4">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">Scientific Foundation & Governance</span>
+          <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+            Peer-Reviewed Criteria.<br>Non-Gameable Methodology.
+          </h1>
+          <p class="text-base text-slate-300 leading-relaxed">
+            SCB was born out of an academic necessity: global branding rankings were rewarding PR spend rather than environmental and technological substance. Here is the peer-reviewed science, empirical dataset, and leadership behind the platform.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- The Empirical Study & Research Moat -->
+    <section class="py-16 bg-white border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <div class="lg:col-span-7 space-y-5">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-600">The Underlying Research</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              A 4-City Comparative Investigation: Amsterdam, Berlin, Copenhagen & Istanbul
+            </h2>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              As the author of the underlying peer-reviewed study, <strong>Ricardo</strong> designed SCB's scoring architecture directly from validated empirical criteria—not marketing agency playbooks. By analyzing expert interviews and auditing municipal Instagram communications against real sensor data, the study revealed a systemic urban vulnerability:
+            </p>
+            <blockquote class="p-4 rounded-xl bg-slate-50 border-l-4 border-amber-500 text-xs sm:text-sm text-slate-700 italic font-medium leading-relaxed">
+              "Branding that runs ahead of real governance and infrastructure substance functions as greenwashing that benefits short-term political actors while deceiving citizens, investors, and oversight institutions."
+            </blockquote>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              SCB is the only technology built specifically to bridge this gap: measuring real investments, digital infrastructure, e-governance, and environmental quality to provide an honest, defensible baseline.
+            </p>
+          </div>
+
+          <div class="lg:col-span-5 bg-slate-50 p-8 rounded-2xl border border-slate-200 space-y-4">
+            <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider font-mono">Empirical Research Highlights</h3>
+            <div class="space-y-3 text-xs text-slate-700">
+              <div class="p-3 bg-white rounded-lg border border-slate-200">
+                <strong class="text-slate-900 block mb-0.5">Dual-Method Audit:</strong>
+                Combines high-frequency NLP text classification with continuous open sensor readings.
+              </div>
+              <div class="p-3 bg-white rounded-lg border border-slate-200">
+                <strong class="text-slate-900 block mb-0.5">Anti-Greenwashing Defense:</strong>
+                Algorithms automatically penalize promotional volume that exceeds ground-truth infrastructure milestones.
+              </div>
+              <div class="p-3 bg-white rounded-lg border border-slate-200">
+                <strong class="text-slate-900 block mb-0.5">Democratic Accountability:</strong>
+                Provides civil society and journalists with evidence-based checks on municipal budget claims.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- The 6 Governance-Branding Dimensions -->
+    <section class="py-16 bg-slate-50 border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mb-12">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Methodological Architecture</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">The 6-Dimension Audit Framework</h2>
+          <p class="text-sm text-slate-600 mt-2">Every city audit aggregates continuous signals across six balanced tracks.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          <div class="p-6 bg-white rounded-xl border border-slate-200">
+            <div class="text-amber-600 font-mono text-xs font-bold mb-1">Track 01</div>
+            <h4 class="font-bold text-slate-900 text-base mb-2">Environmental Sustainability</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              OpenAQ station sensors, PM2.5/PM10 concentrations, climate disclosures (CDP), and verified municipal greenhouse-gas reduction trajectories.
+            </p>
+          </div>
+
+          <div class="p-6 bg-white rounded-xl border border-slate-200">
+            <div class="text-amber-600 font-mono text-xs font-bold mb-1">Track 02</div>
+            <h4 class="font-bold text-slate-900 text-base mb-2">Digital Infrastructure</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Broadband Atlas gigabit availability, 5G cellular density (OpenCelliD), PeeringDB internet exchanges, and Ookla map-tile performance metrics.
+            </p>
+          </div>
+
+          <div class="p-6 bg-white rounded-xl border border-slate-200">
+            <div class="text-amber-600 font-mono text-xs font-bold mb-1">Track 03</div>
+            <h4 class="font-bold text-slate-900 text-base mb-2">Smart Tourism & Mobility</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              TomTom congestion ratios and flow velocity, OpenSky flight connectivity and origin spread, and official Wikimedia digital readership interest.
+            </p>
+          </div>
+
+          <div class="p-6 bg-white rounded-xl border border-slate-200">
+            <div class="text-amber-600 font-mono text-xs font-bold mb-1">Track 04</div>
+            <h4 class="font-bold text-slate-900 text-base mb-2">E-Governance & Transparency</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              CKAN open data catalog freshness, Decidim/Consul participatory democracy activity, and World Bank Worldwide Governance indicators.
+            </p>
+          </div>
+
+          <div class="p-6 bg-white rounded-xl border border-slate-200">
+            <div class="text-amber-600 font-mono text-xs font-bold mb-1">Track 05</div>
+            <h4 class="font-bold text-slate-900 text-base mb-2">Smart Communication & AI</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Conversational citizen-AI service resolution (IDA bot), grassroots civic tech ecosystems, and GDELT 2.0 global news tone and volume.
+            </p>
+          </div>
+
+          <div class="p-6 bg-white rounded-xl border border-slate-200">
+            <div class="text-amber-600 font-mono text-xs font-bold mb-1">Track 06</div>
+            <h4 class="font-bold text-slate-900 text-base mb-2">Stakeholders & Innovation</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Adzuna talent demand, OpenCorporates new business registrations, aerospace/AI research clusters (DFKI, ZARM), and FDI capital benchmarks.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Leadership Team: Ricardo, Julian, and John -->
+    <section class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-600">The Founders</span>
+          <h2 class="text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">Executive Leadership Team</h2>
+          <p class="text-sm text-slate-600 mt-3">
+            Combining academic peer-reviewed research, enterprise software architecture, and public governance experience.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          <!-- Team Member 1: Ricardo -->
+          <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center flex flex-col items-center">
+            <div class="w-20 h-20 rounded-full bg-slate-900 text-amber-400 font-black text-2xl flex items-center justify-center mb-4 shadow-md border-2 border-amber-400/40">
+              R
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Ricardo</h3>
+            <div class="text-xs font-mono font-semibold text-amber-600 uppercase mt-0.5 mb-3">Lead Founder & Methodology Author</div>
+            <p class="text-xs text-slate-600 leading-relaxed text-center">
+              Author of the 4-city comparative study on urban greenwashing and smart branding. Formulated the 6-dimension empirical scoring criteria that underpins SCB's non-gameable index.
+            </p>
+          </div>
+
+          <!-- Team Member 2: Julian -->
+          <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center flex flex-col items-center">
+            <div class="w-20 h-20 rounded-full bg-slate-900 text-amber-400 font-black text-2xl flex items-center justify-center mb-4 shadow-md border-2 border-amber-400/40">
+              J
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Julian</h3>
+            <div class="text-xs font-mono font-semibold text-amber-600 uppercase mt-0.5 mb-3">Co-Founder & Head of Data Architecture</div>
+            <p class="text-xs text-slate-600 leading-relaxed text-center">
+              Architect of the multi-stream ingestion engine connecting 70 open API feeds. Leads backend data reliability, normalization algorithms, and cloud telemetry infrastructure.
+            </p>
+          </div>
+
+          <!-- Team Member 3: John -->
+          <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center flex flex-col items-center">
+            <div class="w-20 h-20 rounded-full bg-slate-900 text-amber-400 font-black text-2xl flex items-center justify-center mb-4 shadow-md border-2 border-amber-400/40">
+              J
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">John</h3>
+            <div class="text-xs font-mono font-semibold text-amber-600 uppercase mt-0.5 mb-3">Co-Founder & Institutional Relations</div>
+            <p class="text-xs text-slate-600 leading-relaxed text-center">
+              Leads municipal enterprise outreach, German public procurement (Vergaberecht) alignment, and strategic partnerships with state economic development organizations.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Contact Mini-Banner -->
+    <section class="py-12 bg-slate-100 border-t border-slate-200 text-center">
+      <div class="max-w-4xl mx-auto px-4">
+        <p class="text-xs font-mono uppercase text-slate-500 mb-2">Institutional Inquiries & Briefings</p>
+        <div class="flex flex-wrap justify-center items-center gap-6 text-sm font-semibold text-slate-800">
+          <span>Phone: <a href="tel:01456789" class="font-mono text-amber-700 hover:underline">01456789</a></span>
+          <span>•</span>
+          <span>Email: <a href="mailto:help@locksmitNY.com" class="font-mono text-amber-700 hover:underline">help@locksmitNY.com</a></span>
+          <span>•</span>
+          <a href="contact.html" class="text-slate-900 underline font-bold">Schedule Institutional Meeting &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Universal Institutional Footer -->
+  <footer class="border-t border-slate-200 bg-slate-900 text-slate-300 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        
+        <!-- Column 1: Brand & Thesis -->
+        <div class="space-y-4 md:col-span-1">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-black text-slate-900 text-sm">
+              SCB
+            </div>
+            <span class="font-extrabold text-white text-base tracking-tight">Smart City Branding</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            The independent B2B/B2G verification SaaS auditing claim-to-substance alignment across European municipal data. Verifying ground-truth before communication.
+          </p>
+          <div class="text-[11px] text-slate-400 font-mono">
+            Peer-Reviewed Methodology • Bremen / DACH
+          </div>
+        </div>
+
+        <!-- Column 2: Navigation Links -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Architecture</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            <li><a href="index.html" class="hover:text-white transition-colors">Platform & PoC Demo</a></li>
+            <li><a href="about.html" class="hover:text-white transition-colors">Methodology & Research Moat</a></li>
+            <li><a href="pricing.html" class="hover:text-white transition-colors">The Gap Report & Index Tiers</a></li>
+            <li><a href="contact.html" class="hover:text-white transition-colors">Request a City Audit Pilot</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Leadership & Core Team -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Founding Team</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">Ricardo</strong> — Research & Methodology Author
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">Julian</strong> — Architecture & Data Pipeline
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">John</strong> — Institutional Relations & Governance
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Institutional Contact -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Institutional Desk</h4>
+          <div class="space-y-2 text-xs text-slate-400">
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Direct Telephone:</span>
+              <a href="tel:01456789" class="text-slate-200 hover:text-amber-400 font-mono font-semibold transition-colors">01456789</a>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Confidential Inquiries:</span>
+              <a href="mailto:help@locksmitNY.com" class="text-slate-200 hover:text-amber-400 font-mono font-semibold transition-colors">help@locksmitNY.com</a>
+            </div>
+            <div class="pt-2">
+              <span class="inline-block text-[10px] px-2 py-1 rounded bg-slate-800 text-amber-300 font-semibold border border-slate-700">
+                EXIST-Gründungsstipendium Candidate
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div>
+          &copy; 2026 Smart City Branding (SCB). All rights reserved. Built for institutional rigor and democratic urban transparency.
+        </div>
+        <div class="flex items-center gap-6">
+          <span class="text-slate-400 font-medium">Bremen • Copenhagen • Berlin • Amsterdam</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+  </script>
+
+</body>
+</html>

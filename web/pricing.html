@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commercial Products & Pricing — Smart City Branding (SCB)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .navy-gradient { background: linear-gradient(135deg, #0b1329 0%, #111c44 50%, #0f172a 100%); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- Universal Navigation Bar (Identical Across All Pages) -->
+  <header class="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo & Identity -->
+      <a href="index.html" class="flex items-center gap-3.5 group">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-extrabold text-white text-lg tracking-wider shadow-md shadow-slate-900/10 border border-slate-800 transition-transform group-hover:scale-105">
+          <span class="text-amber-400">S</span>CB
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors">Smart City Branding</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">Audit & Index</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block">Institutional Verification & Civic Accountability SaaS</p>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="index.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Platform & PoC</a>
+        <a href="about.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Methodology & Team</a>
+        <a href="pricing.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Commercial Tiers</a>
+        <a href="contact.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Institutional Pilot</a>
+      </nav>
+
+      <!-- Action Button & Mobile Toggle -->
+      <div class="flex items-center gap-3">
+        <a href="contact.html" class="inline-flex items-center justify-center text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm hover:shadow active:scale-95 border border-slate-800">
+          Request Audit Pilot
+        </a>
+        <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" aria-label="Toggle Navigation Menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
+      <a href="index.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Platform & PoC</a>
+      <a href="about.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Methodology & Team</a>
+      <a href="pricing.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Commercial Tiers</a>
+      <a href="contact.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2">Institutional Pilot</a>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    
+    <!-- Hero Banner -->
+    <section class="navy-gradient text-white py-16 lg:py-24 border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl space-y-4">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">Institutional Commercial Models</span>
+          <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+            Transparent, Defensible Urban Intelligence.
+          </h1>
+          <p class="text-base text-slate-300 leading-relaxed">
+            Built to match municipal procurement cycles, public-benefit reporting requirements, and enterprise economic development mandates across the DACH region and Northern Europe.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- The 3 Tiers Detailed Cards -->
+    <section class="py-20 bg-slate-50 border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          
+          <!-- Product 1: The Gap Report -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm flex flex-col justify-between hover:border-slate-400 transition">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Product 01</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">One-Time Engagement</span>
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900">The Gap Report</h3>
+              <p class="text-xs text-slate-500 mt-1">Independent Claim-to-Substance Audit</p>
+              
+              <div class="my-6">
+                <div class="font-mono text-4xl font-extrabold text-slate-900">€12,000</div>
+                <div class="text-[11px] text-slate-400 mt-1 font-mono">One-time audit fee • Net of VAT</div>
+              </div>
+
+              <div class="space-y-3 pt-4 border-t border-slate-100 text-xs text-slate-600">
+                <div class="font-bold text-slate-900 text-xs uppercase font-mono">Deliverables:</div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Full 6-dimension empirical audit of city communication vs. open municipal data.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Comprehensive Evidence Dossier identifying all over-claimed or greenwashing risks.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Benchmarking against peer European regional capitals (Amsterdam/Copenhagen criteria).</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Executive Briefing presentation for the Mayor and Senate departments.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-8">
+              <a href="contact.html?tier=gap-report" class="block text-center text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition">
+                Commission a Gap Report
+              </a>
+            </div>
+          </div>
+
+          <!-- Product 2: The Index Subscription -->
+          <div class="bg-white rounded-2xl border-2 border-amber-500 p-8 shadow-xl relative flex flex-col justify-between">
+            <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow">
+              Most Popular • Recurring SaaS
+            </span>
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-600 font-mono">Product 02</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-mono">Annual License</span>
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900">The Index Subscription</h3>
+              <p class="text-xs text-slate-500 mt-1">Live Telemetry & Transparency Portal</p>
+              
+              <div class="my-6">
+                <div class="font-mono text-4xl font-extrabold text-slate-900">€2,500 <span class="text-sm font-normal text-slate-500">/ month</span></div>
+                <div class="text-[11px] text-slate-400 mt-1 font-mono">Billed annually (€30,000/yr)</div>
+              </div>
+
+              <div class="space-y-3 pt-4 border-t border-slate-100 text-xs text-slate-600">
+                <div class="font-bold text-slate-900 text-xs uppercase font-mono">Deliverables:</div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Continuous live dashboard tracking 70 municipal data streams in real time.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Automated alerts when public communication diverges from sensor telemetry.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Official "SCB Verified Substantiation" digital badge for city portals.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Quarterly index update reports for city council, journalists, and FDI investors.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Full REST API access for municipal transparency integrations.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-8">
+              <a href="contact.html?tier=index-subscription" class="block text-center text-xs font-black uppercase tracking-wider py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-md shadow-amber-500/20">
+                Subscribe to SCB Index
+              </a>
+            </div>
+          </div>
+
+          <!-- Product 3: Strategic Advisory -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm flex flex-col justify-between hover:border-slate-400 transition">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Product 03</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">Project-Based</span>
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900">Strategic Advisory</h3>
+              <p class="text-xs text-slate-500 mt-1">Governance & Substance Remediation</p>
+              
+              <div class="my-6">
+                <div class="font-mono text-4xl font-extrabold text-slate-900">Custom Scope</div>
+                <div class="text-[11px] text-slate-400 mt-1 font-mono">Scoped by municipality complexity</div>
+              </div>
+
+              <div class="space-y-3 pt-4 border-t border-slate-100 text-xs text-slate-600">
+                <div class="font-bold text-slate-900 text-xs uppercase font-mono">Deliverables:</div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Dedicated support to close verified substance gaps identified in audit reports.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Cross-departmental data alignment (Senate for Economy, Environment, and Finance).</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Open data portal governance restructuring (CKAN integration).</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-amber-500 font-bold">✓</span>
+                  <span>Direct consulting with Ricardo, Julian, and John.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-8">
+              <a href="contact.html?tier=advisory" class="block text-center text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition">
+                Inquire on Advisory
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Procurement & Compliance Accordion -->
+    <section class="py-16 bg-white">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight text-center mb-10">
+          Public Procurement & Compliance Assurance
+        </h2>
+
+        <div class="space-y-4">
+          <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+            <h4 class="font-bold text-slate-900 text-sm mb-1">German & EU Public Procurement (Vergaberecht) Compatibility</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              At €12,000, the Gap Report falls comfortably below German and EU public procurement thresholds (Direktvergabe / Unterschwellenvergabe), allowing municipal departments and tourism offices to commission audits quickly without protracted tender processes.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+            <h4 class="font-bold text-slate-900 text-sm mb-1">Strict GDPR & Data Sovereignty Architecture</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              SCB ingests exclusively aggregated, publicly accessible municipal open data and broadcast news sentiment. We do not store or process personal citizen telemetry or IP addresses. All processing runs in compliance with strict EU and German data governance regulations.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+            <h4 class="font-bold text-slate-900 text-sm mb-1">Non-Gameable, Scientifically Defensible Independence</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Unlike PR agencies, SCB cannot be paid to alter audit scores. The methodology is open, peer-reviewed, and anchored in empirical metrics. A city paying for the Index Subscription receives continuous accountability—guaranteeing that high scores are genuinely earned and respected by international rating bodies.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Universal Institutional Footer -->
+  <footer class="border-t border-slate-200 bg-slate-900 text-slate-300 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        
+        <!-- Column 1: Brand & Thesis -->
+        <div class="space-y-4 md:col-span-1">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-black text-slate-900 text-sm">
+              SCB
+            </div>
+            <span class="font-extrabold text-white text-base tracking-tight">Smart City Branding</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            The independent B2B/B2G verification SaaS auditing claim-to-substance alignment across European municipal data. Verifying ground-truth before communication.
+          </p>
+          <div class="text-[11px] text-slate-400 font-mono">
+            Peer-Reviewed Methodology • Bremen / DACH
+          </div>
+        </div>
+
+        <!-- Column 2: Navigation Links -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Architecture</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            <li><a href="index.html" class="hover:text-white transition-colors">Platform & PoC Demo</a></li>
+            <li><a href="about.html" class="hover:text-white transition-colors">Methodology & Research Moat</a></li>
+            <li><a href="pricing.html" class="hover:text-white transition-colors">The Gap Report & Index Tiers</a></li>
+            <li><a href="contact.html" class="hover:text-white transition-colors">Request a City Audit Pilot</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Leadership & Core Team -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Founding Team</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">Ricardo</strong> — Research & Methodology Author
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">Julian</strong> — Architecture & Data Pipeline
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">John</strong> — Institutional Relations & Governance
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Institutional Contact -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Institutional Desk</h4>
+          <div class="space-y-2 text-xs text-slate-400">
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Direct Telephone:</span>
+              <a href="tel:01456789" class="text-slate-200 hover:text-amber-400 font-mono font-semibold transition-colors">01456789</a>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Confidential Inquiries:</span>
+              <a href="mailto:help@locksmitNY.com" class="text-slate-200 hover:text-amber-400 font-mono font-semibold transition-colors">help@locksmitNY.com</a>
+            </div>
+            <div class="pt-2">
+              <span class="inline-block text-[10px] px-2 py-1 rounded bg-slate-800 text-amber-300 font-semibold border border-slate-700">
+                EXIST-Gründungsstipendium Candidate
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div>
+          &copy; 2026 Smart City Branding (SCB). All rights reserved. Built for institutional rigor and democratic urban transparency.
+        </div>
+        <div class="flex items-center gap-6">
+          <span class="text-slate-400 font-medium">Bremen • Copenhagen • Berlin • Amsterdam</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+  </script>
+
+</body>
+</html>

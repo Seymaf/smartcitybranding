@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact & Pilot Scoping — Smart City Branding (SCB)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .navy-gradient { background: linear-gradient(135deg, #0b1329 0%, #111c44 50%, #0f172a 100%); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- Universal Navigation Bar (Identical Across All Pages) -->
+  <header class="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo & Identity -->
+      <a href="index.html" class="flex items-center gap-3.5 group">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-extrabold text-white text-lg tracking-wider shadow-md shadow-slate-900/10 border border-slate-800 transition-transform group-hover:scale-105">
+          <span class="text-amber-400">S</span>CB
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors">Smart City Branding</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">Audit & Index</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block">Institutional Verification & Civic Accountability SaaS</p>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="index.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Platform & PoC</a>
+        <a href="about.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Methodology & Team</a>
+        <a href="pricing.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Commercial Tiers</a>
+        <a href="contact.html" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-1">Institutional Pilot</a>
+      </nav>
+
+      <!-- Action Button & Mobile Toggle -->
+      <div class="flex items-center gap-3">
+        <a href="contact.html" class="inline-flex items-center justify-center text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm hover:shadow active:scale-95 border border-slate-800">
+          Request Audit Pilot
+        </a>
+        <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" aria-label="Toggle Navigation Menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
+      <a href="index.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Platform & PoC</a>
+      <a href="about.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Methodology & Team</a>
+      <a href="pricing.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2 border-b border-slate-100">Commercial Tiers</a>
+      <a href="contact.html" class="block text-sm font-semibold text-slate-800 hover:text-amber-600 py-2">Institutional Pilot</a>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    
+    <!-- Hero Banner -->
+    <section class="navy-gradient text-white py-16 lg:py-20 border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl space-y-4">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">Direct Institutional Desk</span>
+          <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+            Schedule an Audit Briefing or Pilot.
+          </h1>
+          <p class="text-base text-slate-300 leading-relaxed">
+            We are actively engaging municipal leaders, smart city coordinators, and economic development directors across the DACH region and Northern Europe.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Contact & Form Section -->
+    <section class="py-16 lg:py-20 bg-slate-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <!-- Left Column: Direct Credentials & Info -->
+          <div class="lg:col-span-5 space-y-8">
+            
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Institutional Engagement</span>
+              <h2 class="text-2xl font-extrabold text-slate-900 mt-1 tracking-tight">Direct Communications</h2>
+              <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                Connect directly with the founding team to evaluate your city's open data readiness or commission a confidential Gap Report audit.
+              </p>
+            </div>
+
+            <!-- Direct Contact Cards -->
+            <div class="space-y-4">
+              
+              <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg shrink-0 border border-amber-200">
+                  📞
+                </div>
+                <div>
+                  <div class="text-[10px] font-mono uppercase font-bold text-slate-400">Institutional Phone</div>
+                  <a href="tel:01456789" class="text-base font-mono font-bold text-slate-900 hover:text-amber-600 transition">
+                    01456789
+                  </a>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Mon–Fri, 09:00 – 18:00 CET</p>
+                </div>
+              </div>
+
+              <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg shrink-0 border border-amber-200">
+                  ✉️
+                </div>
+                <div>
+                  <div class="text-[10px] font-mono uppercase font-bold text-slate-400">Confidential Desk</div>
+                  <a href="mailto:help@locksmitNY.com" class="text-base font-mono font-bold text-slate-900 hover:text-amber-600 transition">
+                    help@locksmitNY.com
+                  </a>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Formal RFP, pilot requests & research inquiries</p>
+                </div>
+              </div>
+
+              <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-lg shrink-0 border border-slate-200">
+                  🏛️
+                </div>
+                <div>
+                  <div class="text-[10px] font-mono uppercase font-bold text-slate-400">Lead Representatives</div>
+                  <div class="text-sm font-bold text-slate-900 mt-0.5">Ricardo, Julian, and John</div>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Founders • Smart City Branding (SCB)</p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Free Pilot Callout -->
+            <div class="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 space-y-2">
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                Pilot Grant Program
+              </span>
+              <h4 class="font-bold text-sm text-slate-900">3 Subsidized City Pilots Open</h4>
+              <p class="text-xs text-slate-700 leading-relaxed">
+                As part of our EXIST-Gründungsstipendium expansion, we are selecting three mid-sized European cities for a full subsidized Gap Report in exchange for structured feedback.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Smart Web3Forms Contact Form -->
+          <div class="lg:col-span-7 bg-white p-8 sm:p-10 rounded-2xl border border-slate-200 shadow-md">
+            
+            <div class="mb-6 pb-4 border-b border-slate-100">
+              <h3 class="text-xl font-bold text-slate-900">Request an Audit or Briefing</h3>
+              <p class="text-xs text-slate-500 mt-1">Submit your details below to connect with Ricardo, Julian, or John.</p>
+            </div>
+
+            <!-- Web3Forms Form Integration -->
+            <form action="https://api.web3forms.com/submit" method="POST" class="space-y-5">
+              
+              <!-- Required Web3Forms Access Key Input -->
+              <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">
+              <!-- Optional Web3Forms Subject -->
+              <input type="hidden" name="subject" value="New Institutional SCB Audit Inquiry">
+              <!-- Optional Honeypot to prevent spam -->
+              <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="name" class="block text-xs font-bold text-slate-700 mb-1 uppercase font-mono">Full Name *</label>
+                  <input type="text" id="name" name="name" required placeholder="e.g. Dr. Thomas Weber" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-slate-50/50">
+                </div>
+                <div>
+                  <label for="title" class="block text-xs font-bold text-slate-700 mb-1 uppercase font-mono">Official Title / Role *</label>
+                  <input type="text" id="title" name="title" required placeholder="e.g. Head of Smart City Dept." class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-slate-50/50">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="organization" class="block text-xs font-bold text-slate-700 mb-1 uppercase font-mono">Municipality / Agency *</label>
+                  <input type="text" id="organization" name="organization" required placeholder="e.g. City of Bremen" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-slate-50/50">
+                </div>
+                <div>
+                  <label for="email" class="block text-xs font-bold text-slate-700 mb-1 uppercase font-mono">Official Work Email *</label>
+                  <input type="email" id="email" name="email" required placeholder="weber@bremen.de" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-slate-50/50">
+                </div>
+              </div>
+
+              <div>
+                <label for="engagement_type" class="block text-xs font-bold text-slate-700 mb-1 uppercase font-mono">Engagement of Interest</label>
+                <select id="engagement_type" name="engagement_type" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-slate-50/50">
+                  <option value="gap_report">Commission a Gap Report (€12,000 Audit)</option>
+                  <option value="index_subscription">The Index Subscription (€2,500/month Live SaaS)</option>
+                  <option value="subsidized_pilot">Apply for 3-City Subsidized Pilot Program</option>
+                  <option value="strategic_advisory">Strategic Governance Advisory</option>
+                  <option value="academic_inquiry">Methodology & Research Inquiries</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="message" class="block text-xs font-bold text-slate-700 mb-1 uppercase font-mono">Message / City Context</label>
+                <textarea id="message" name="message" rows="4" placeholder="Briefly describe your city's current smart-city or sustainability communication priorities..." class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-slate-50/50"></textarea>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="w-full py-3.5 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider transition shadow-md hover:shadow-lg active:scale-95">
+                  Submit Institutional Briefing Request &rarr;
+                </button>
+              </div>
+
+              <p class="text-[11px] text-slate-400 text-center font-mono">
+                Encrypted via Web3Forms • Strictly confidential institutional evaluation
+              </p>
+
+            </form>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Universal Institutional Footer -->
+  <footer class="border-t border-slate-200 bg-slate-900 text-slate-300 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        
+        <!-- Column 1: Brand & Thesis -->
+        <div class="space-y-4 md:col-span-1">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-black text-slate-900 text-sm">
+              SCB
+            </div>
+            <span class="font-extrabold text-white text-base tracking-tight">Smart City Branding</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            The independent B2B/B2G verification SaaS auditing claim-to-substance alignment across European municipal data. Verifying ground-truth before communication.
+          </p>
+          <div class="text-[11px] text-slate-400 font-mono">
+            Peer-Reviewed Methodology • Bremen / DACH
+          </div>
+        </div>
+
+        <!-- Column 2: Navigation Links -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Architecture</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            <li><a href="index.html" class="hover:text-white transition-colors">Platform & PoC Demo</a></li>
+            <li><a href="about.html" class="hover:text-white transition-colors">Methodology & Research Moat</a></li>
+            <li><a href="pricing.html" class="hover:text-white transition-colors">The Gap Report & Index Tiers</a></li>
+            <li><a href="contact.html" class="hover:text-white transition-colors">Request a City Audit Pilot</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Leadership & Core Team -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Founding Team</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">Ricardo</strong> — Research & Methodology Author
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">Julian</strong> — Architecture & Data Pipeline
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <strong class="text-slate-200">John</strong> — Institutional Relations & Governance
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Institutional Contact -->
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Institutional Desk</h4>
+          <div class="space-y-2 text-xs text-slate-400">
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Direct Telephone:</span>
+              <a href="tel:01456789" class="text-slate-200 hover:text-amber-400 font-mono font-semibold transition-colors">01456789</a>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Confidential Inquiries:</span>
+              <a href="mailto:help@locksmitNY.com" class="text-slate-200 hover:text-amber-400 font-mono font-semibold transition-colors">help@locksmitNY.com</a>
+            </div>
+            <div class="pt-2">
+              <span class="inline-block text-[10px] px-2 py-1 rounded bg-slate-800 text-amber-300 font-semibold border border-slate-700">
+                EXIST-Gründungsstipendium Candidate
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div>
+          &copy; 2026 Smart City Branding (SCB). All rights reserved. Built for institutional rigor and democratic urban transparency.
+        </div>
+        <div class="flex items-center gap-6">
+          <span class="text-slate-400 font-medium">Bremen • Copenhagen • Berlin • Amsterdam</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+  </script>
+
+</body>
+</html>
